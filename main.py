@@ -5,16 +5,14 @@ from kivy.vector import Vector
 
 
 class Condition(Widget):
-    pass
-
-
-class Solver(Widget):
-    pass
+    def on_touch_down(self, touch):
+        print('f', touch)
+        return super().on_touch_down(touch)
 
 
 class LaplaceApp(App):
     def build(self):
-        return Solver()
+        return Condition()
 
 
 if __name__ == '__main__':
