@@ -1,59 +1,60 @@
-from kivy.app import App
+from kivy.app import runTouchApp
+from kivy.lang import Builder
+from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
-from kivy.core.window import Window
-from kivy.graphics import Color, Line, Rectangle
+from kivy.graphics import *
+from random import random as R
+Builder.load_string('''
+<Drawing>:
+    canvas:
+        Color:
+            rgba: 1, 0, 0, 0.4
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 1, 1, 1, 1
+''')
 
-Window.set_system_cursor('crosshair')
-
-DRAG_START = ()
-DRAG_END = ()
-DRAGGING = False
-
-
-class Widget(BoxLayout):
-    def __init__(self, **kwargs):
-        super(Widget, self).__init__(**kwargs)
-        Window.bind(mouse_pos=self.mouse_pos)
-        self.bind(pos=self.draw)
-        self.bind(size=self.draw)
-        self.layout1 = BoxLayout(opacity=1)
-        self.add_widget(self.layout1)
-
-    def draw(self, *args):
-        self.layout1.canvas.clear()
-        with self.canvas.before:
-            Color(0.6, 0.6, 0.6, 1)
-            self.bg = Rectangle(pos=self.pos, size=self.size)
-
-    def drawLine(self, mPos):
-        self.canvas.clear()
+class Drawing(Widget):
+    def __init__(self, shape=00, **kw):
+        super(Drawing, self).__init__(**kw)
+        self.size_hint = (None, None)
         with self.canvas:
-            Color(0, 0, 0, 1)
-            Line(
-                points=[DRAG_START[0], DRAG_START[1], mPos[0], mPos[1]],
-                width=1.4)
-
-    def mouse_pos(self, window, pos):
-        if DRAGGING == True:
-            self.drawLine(pos)
-
-    def on_touch_down(self, event):
-        global DRAGGING, DRAG_START
-        DRAGGING = True
-        DRAG_START = event.pos
-
-    def on_touch_up(self, event):
-        global DRAGGING, DRAG_END
-        DRAGGING = False
-        DRAG_END = event.pos
+            pts = [*self.center, 100, 0, 359 * R(), 200]
+            if shape==1:
+                self.line = Line(circle=pts)
+                self.name = 'circle'
+            elif shape==2:
+                self.line = Line(rectangle=pts[2:])
+                self.name = 'rectangle'
+            else:
+                self.line = Line(points=pts)
+                self.name = 'points'
 
 
-class App(App):
-    title = "Kivy Click Drag Line"
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            touch.grab(self)
+            print(self.name)
+        self.old = self.pos[:]
 
-    def build(self):
-        return Widget()
+    def on_touch_move(self, touch):
+        if touch.grab_current is not self:
+            return
+        points = self.line.points[:]
+        ox = touch.x - self.old[0]
+        oy = touch.y - self.old[1]
+        for i in range(len(points)):
+            if not i % 2:
+                points[i] += ox
+                points[i + 1] += oy
+        self.line.points = points
+        self.old = touch.pos
+        self.pos = [self.pos[0] + ox, self.pos[1] + oy]
 
 
-if __name__ == "__main__":
-    App().run()
+box = BoxLayout()
+for i in [0, 1, 2]:
+    box.add_widget(Drawing(shape=i, pos=[200 * R(), 100 * R()]))
+runTouchApp(box)
