@@ -23,7 +23,7 @@ class Condition(Widget):
    
 
     def on_touch_move(self, touch):
-        #на рефакирпе сделатьпередачу через touch.ud["select_elp"]
+        #на рефакирпе сделатьпередачу через touch.ud["select_elp"] и self.collide_point
         for elp in self.elps:
             x0, y0 ,x1, y1 = elp.pos[0], elp.pos[1], touch.x, touch.y
             # разница между курсором и центром круга
@@ -89,7 +89,8 @@ class LaplaceApp(App):
             self.painter.count -= 1
 
     def add_connection(self, instance):
-        pass
+        if self.painter.check_elps:
+            pass
 
  
 if __name__ == '__main__':
