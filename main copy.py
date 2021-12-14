@@ -48,10 +48,7 @@ class Condition(Widget):
 
         if self.collide_point(*touch.pos):
             touch.grab(self)
-            with self.canvas:
-                Color(1,1,0)
-                        self.line = Line(circle = (elp.pos[0]+50, elp.pos[1]+50, self.radius-2), width = 2)
-                    self.check_elps = elp
+            print(self.pos)
         return super().on_touch_down(touch)
 
 
