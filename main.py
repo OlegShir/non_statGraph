@@ -1,4 +1,4 @@
-from os import remove
+from kivy.core.window import Window
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
@@ -8,7 +8,14 @@ from kivy.graphics import Ellipse
 from kivy.graphics import Color
 from kivy.graphics import Line
 import math
+from kivy.uix.screenmanager import ScreenManager, Screen 
 
+
+class MainScreen(Screen):
+    def on_mouse_pos(self, pos):
+        print(pos)
+
+    Window.bind(mouse_pos = on_mouse_pos)
 
 class Condition(Widget):
     
