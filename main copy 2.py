@@ -9,9 +9,7 @@ from kivy.graphics import Color
 from kivy.graphics import Line
 import math
 from math_func import Geometric
-
 geo = Geometric()
-
 
 class Condition(Widget):
       
@@ -24,24 +22,41 @@ class Condition(Widget):
         self.check_elps = None
         self.line = None
         self.active_elp = None
+        self.connector = None
+        
 
         Window.bind(mouse_pos=self.on_motion)
     
     def on_motion(self, window, pos):
-        for elp in self.elps:
-            if geo.cross_cursor_ellipse(elp.pos, pos, self.radius):
-                if not self.line:
-                    with self.canvas:
-                        Color(1,0,0)
-                        self.line = Line(circle = (elp.pos[0]+50, elp.pos[1]+50, self.radius-2), width = 2)
-                        
-                self.active_elp = elp
-        
+        x1, y1 = pos[0], pos[1]
+
         if self.active_elp:
             if math.sqrt((x1- self.active_elp.pos[0]-self.radius)**2+(y1-self.active_elp.pos[1]-self.radius)**2) > self.radius:
                 self.active_elp = None
-                self.canvas.remove(self.line)
+                for conn in self.connector: self.canvas.remove(conn)
                 self.line = None
+                self.connector = None
+        else:
+            for elp in self.elps:
+                x0, y0 ,x1, y1 = elp.pos[0], elp.pos[1], pos[0], pos[1]
+                if math.sqrt((x1-x0-self.radius)**2+(y1-y0-self.radius)**2) <= self.radius:
+                    """
+                    if not self.line:
+                        with self.canvas:
+                            Color(1,0,0)
+                            self.line = Line(circle = (elp.pos[0]+50, elp.pos[1]+50, self.radius-2), width = 2)
+                    """ 
+                    if not self.connector:
+                        self.connector = []
+                        center_conn = geo.connector_pos(elp.pos)
+                        with self.canvas:
+                            Color(1,0,0)
+                            for conn in center_conn:
+                                self.connector.append(Line(circle = (conn[0], conn[1], self.radius-45), width = 1.5))
+
+                    self.active_elp = elp
+            
+        
 
 
     def on_touch_down(self, touch):
