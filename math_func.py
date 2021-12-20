@@ -1,8 +1,16 @@
+import math
+
 class Geometric:
     def __init__(self) -> None:
         pass
 
-    def cross_cursor_ellipse(self):
+    def cross_cursor_ellipse(witget_pos: tuple, touch_pos:tuple, radius:int)-> bool:
+        x0, y0 = witget_pos
+        x1, y1 = touch_pos
+        if math.sqrt((x1-x0-radius)**2+(y1-y0-radius)**2) <= radius:
+            return True
+        else:
+            return False
 
 
 

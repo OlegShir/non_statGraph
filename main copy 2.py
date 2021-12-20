@@ -8,6 +8,9 @@ from kivy.graphics import Ellipse
 from kivy.graphics import Color
 from kivy.graphics import Line
 import math
+from math_func import Geometric
+
+geo = Geometric()
 
 
 class Condition(Widget):
@@ -26,8 +29,7 @@ class Condition(Widget):
     
     def on_motion(self, window, pos):
         for elp in self.elps:
-            x0, y0 ,x1, y1 = elp.pos[0], elp.pos[1], pos[0], pos[1]
-            if math.sqrt((x1-x0-self.radius)**2+(y1-y0-self.radius)**2) <= self.radius:
+            if geo.cross_cursor_ellipse(elp.pos, pos, self.radius):
                 if not self.line:
                     with self.canvas:
                         Color(1,0,0)
