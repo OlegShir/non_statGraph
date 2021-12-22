@@ -64,6 +64,8 @@ class BezierTest(FloatLayout):
                                            self.points[1::2]))):
                 if (abs(touch.pos[0] - self.pos[0] - p[0]) < self.d and
                         abs(touch.pos[1] - self.pos[1] - p[1]) < self.d):
+
+                    
                     self.current_point = i + 1
                     return True
             return super(BezierTest, self).on_touch_down(touch)
@@ -83,6 +85,7 @@ class BezierTest(FloatLayout):
                 self.points[(c - 1) * 2 + 1] = touch.pos[1] - self.pos[1]
                 self.bezier.points = self.points
                 self.line.points = self.points + self.points[:2]
+                print(self.pos)
                 return True
             return super(BezierTest, self).on_touch_move(touch)
 

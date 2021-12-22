@@ -23,6 +23,7 @@ class Condition(Widget):
         self.line = None
         self.active_elp = None
         self.connector = None
+        self.active_conn = None
         
 
         Window.bind(mouse_pos=self.on_motion)
@@ -31,11 +32,23 @@ class Condition(Widget):
         x1, y1 = pos[0], pos[1]
 
         if self.active_elp:
-            if math.sqrt((x1- self.active_elp.pos[0]-self.radius)**2+(y1-self.active_elp.pos[1]-self.radius)**2) > self.radius:
+            # если попадаем в конектор
+            for conn in self.connector:
+                if geo.cross_cursor(conn.pos, pos, self.radius-40):
+                    self.active_conn = conn
+                    Window.set_system_cursor("hand")
+                    break
+                else:
+                    self.active_conn = None
+                    Window.set_system_cursor("arrow")
+            # если курсор выходит за радиус элепса + 10 рх
+            if not geo.cross_cursor(self.active_elp.pos, pos, self.radius+10):
                 self.active_elp = None
+                # удаление конекторов
                 for conn in self.connector: self.canvas.remove(conn)
                 self.line = None
                 self.connector = None
+                
         else:
             for elp in self.elps:
                 x0, y0 ,x1, y1 = elp.pos[0], elp.pos[1], pos[0], pos[1]
@@ -45,7 +58,8 @@ class Condition(Widget):
                         with self.canvas:
                             Color(1,0,0)
                             self.line = Line(circle = (elp.pos[0]+50, elp.pos[1]+50, self.radius-2), width = 2)
-                    """ 
+                    """
+                    Window.set_system_cursor("hand")
                     if not self.connector:
                         self.connector = []
                         center_conn = geo.connector_pos(elp.pos)

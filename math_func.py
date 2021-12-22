@@ -5,9 +5,10 @@ class Geometric:
     def __init__(self) -> None:
         pass
 
-    def cross_cursor_ellipse(self, x0, y0, radius, *pos)-> bool:
+    def cross_cursor(self, witget, touch_position, radius,)-> bool:
         ''' first argument is widget, second cursor'''
-        x1, y1 = pos
+        x0, y0 = witget
+        x1, y1 = touch_position
         if math.sqrt((x1-x0-radius)**2+(y1-y0-radius)**2) <= radius:
             return True
         else:

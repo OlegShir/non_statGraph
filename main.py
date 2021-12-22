@@ -13,7 +13,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 
 class MainScreen(Screen):
     def on_mouse_pos(self, pos):
-        print(pos)
+        pass
 
     Window.bind(mouse_pos = on_mouse_pos)
 
@@ -51,6 +51,7 @@ class Condition(Widget):
 
 
     def on_touch_down(self, touch):
+        
         
         for elp in self.elps:
             x0, y0 ,x1, y1 = elp.pos[0], elp.pos[1], touch.x, touch.y
