@@ -66,7 +66,8 @@ class Condition(Widget):
                         with self.canvas:
                             Color(1,0,0)
                             for conn in center_conn:
-                                self.connector.append(Line(circle = (conn[0], conn[1], self.radius-45), width = 1.5))
+                                self.connector.append(Ellipse(pos=(conn[0],conn[1]), size=(self.radius-40,self.radius-40)))
+                                #self.connector.append(Line(circle = (conn[0], conn[1], self.radius-45), width = 1.5))
 
                     self.active_elp = elp
             
