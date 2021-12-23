@@ -18,48 +18,49 @@ class Condition(Widget):
         
         self.count = 0
         self.radius = 50
-        self.elps = []
-        self.check_elps = None
-        self.line = None
+
+        self.labels =[]
+            
+
+        self.elps = []     
         self.active_elp = None
+
         self.connector = None
         self.active_conn = None
         
 
         Window.bind(mouse_pos=self.on_motion)
     
-    def on_motion(self, window, pos):
-        x1, y1 = pos[0], pos[1]
+    def on_motion(self, window, touch):
+        print(window)
 
         if self.active_elp:
-            # если попадаем в конектор
-            for conn in self.connector:
-                if geo.cross_cursor(conn.pos, pos, self.radius-40):
-                    self.active_conn = conn
-                    Window.set_system_cursor("hand")
-                    break
-                else:
-                    self.active_conn = None
-                    Window.set_system_cursor("arrow")
+           
             # если курсор выходит за радиус элепса + 10 рх
-            if not geo.cross_cursor(self.active_elp.pos, pos, self.radius+10):
-                self.active_elp = None
+            if not geo.cross_cursor(self.active_elp.pos, touch, self.radius, dopusk=20):
                 # удаление конекторов
                 for conn in self.connector: self.canvas.remove(conn)
-                self.line = None
                 self.connector = None
+                self.active_elp = None
+                self.active_conn =None
+            else:
+                if not self.active_conn:
+                    # если попадаем в конектор
+                    for i, conn in enumerate(self.connector):
+                        if geo.cross_cursor(conn.pos, touch, 5, dopusk=5):
+                            
+                            self.active_conn = conn
+                            Window.set_system_cursor("hand")
+                else:
+                    if not geo.cross_cursor(self.active_conn.pos, touch, 5, dopusk=5):
+                        self.active_conn = None
+                        Window.set_system_cursor("arrow")
                 
         else:
             for elp in self.elps:
-                x0, y0 ,x1, y1 = elp.pos[0], elp.pos[1], pos[0], pos[1]
-                if math.sqrt((x1-x0-self.radius)**2+(y1-y0-self.radius)**2) <= self.radius:
-                    """
-                    if not self.line:
-                        with self.canvas:
-                            Color(1,0,0)
-                            self.line = Line(circle = (elp.pos[0]+50, elp.pos[1]+50, self.radius-2), width = 2)
-                    """
-                    Window.set_system_cursor("hand")
+                # ищем пересечение                
+                if geo.cross_cursor(elp.pos, touch, self.radius):
+                    # рисуем коннекторы
                     if not self.connector:
                         self.connector = []
                         center_conn = geo.connector_pos(elp.pos)
@@ -67,43 +68,41 @@ class Condition(Widget):
                             Color(1,0,0)
                             for conn in center_conn:
                                 self.connector.append(Ellipse(pos=(conn[0],conn[1]), size=(self.radius-40,self.radius-40)))
-                                #self.connector.append(Line(circle = (conn[0], conn[1], self.radius-45), width = 1.5))
-
+                    # запоминаем выбранное состояние            
                     self.active_elp = elp
             
         
 
 
     def on_touch_down(self, touch):
-        '''
-        if self.active_elp:
-            if self.line:
-                self.canvas.remove(self.line)
-            with self.canvas:
-                Color(1,1,0)
-                self.line = Line(circle = (self.active_elp.pos[0]+50, self.active_elp.pos[1]+50, self.radius-2), width = 2)
-                self.check_elps = self.active_elp
-        return super().on_touch_down(touch)
-        '''
+        if self.active_conn:
+            touch.ud["conect"] = True
+
+
+
+
+
+
+
 
     def on_touch_move(self, touch):
         #на рефакирпе сделатьпередачу через touch.ud["select_elp"] и self.collide_point
         if self.active_elp:
-            elp = self.active_elp
-            x0, y0 ,x1, y1 = elp.pos[0], elp.pos[1], touch.x, touch.y
-            # разница между курсором и центром круга
+            i = self.elps.index(self.active_elp)
+            # получаем координаты для пересчета движения       
+            x0, y0 ,x1, y1 = *self.active_elp.pos, touch.x, touch.y
+            # разница между курсором и центром элипса
             ox = x1-x0-self.radius
             oy = y1-y0-self.radius
             # новое положение состояния
-            elp.pos = [touch.x-self.radius, touch.y-self.radius]
-            # перемещение выделителя
-            points = self.line.points[:]
-            for i in range(len(points)):
-                if not i % 2:
-                    points[i] += ox
-                    points[i + 1] += oy
-                self.line.points = points
+            self.active_elp.pos = [touch.x-self.radius, touch.y-self.radius]
+            # перемещение конекторов            
+            for conn in self.connector:
+                conn.pos = (conn.pos[0]+ox, conn.pos[1]+oy)
+            # перемещение подписи
+            self.labels[i].pos = (self.labels[i].pos[0]+ox, self.labels[i].pos[1]+oy)
         return super().on_touch_down(touch)
+        
 
 
 class LaplaceApp(App):
@@ -121,8 +120,9 @@ class LaplaceApp(App):
     def add_condition(self, instance):
         with self.painter.canvas:
             Color(1,1,1)
-            self.painter.elps.append(Ellipse(pos=(200,200), size=(2*self.painter.radius,2*self.painter.radius)))
-            self.painter.count += 1
+            self.painter.elps.append(Ellipse(pos=(200,200), size=(2*self.painter.radius,2*self.painter.radius),))
+            self.painter.labels.append(Label(text=str(self.painter.count), font_size = 60, halign='left', pos=(200,200), color=(0,0,0)))
+        self.painter.count += 1
 
     def del_condition(self, instance):
         if self.painter.elps and self.painter.check_elps:
