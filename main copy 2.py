@@ -76,7 +76,7 @@ class Condition(Widget):
 
     def on_touch_down(self, touch):
         if self.active_conn:
-            touch.ud["conect"] = True
+            print('go')
 
 
 
@@ -87,22 +87,25 @@ class Condition(Widget):
 
     def on_touch_move(self, touch):
         #на рефакирпе сделатьпередачу через touch.ud["select_elp"] и self.collide_point
-        if self.active_elp:
-            i = self.elps.index(self.active_elp)
-            # получаем координаты для пересчета движения       
-            x0, y0 ,x1, y1 = *self.active_elp.pos, touch.x, touch.y
-            # разница между курсором и центром элипса
-            ox = x1-x0-self.radius
-            oy = y1-y0-self.radius
-            # новое положение состояния
-            self.active_elp.pos = [touch.x-self.radius, touch.y-self.radius]
-            # перемещение конекторов            
-            for conn in self.connector:
-                conn.pos = (conn.pos[0]+ox, conn.pos[1]+oy)
-            # перемещение подписи
-            self.labels[i].pos = (self.labels[i].pos[0]+ox, self.labels[i].pos[1]+oy)
+        if self.active_conn:
+            pass
+        else:
+            if self.active_elp:
+                i = self.elps.index(self.active_elp)
+                # получаем координаты для пересчета движения       
+                x0, y0 ,x1, y1 = *self.active_elp.pos, touch.x, touch.y
+                # разница между курсором и центром элипса
+                ox = x1-x0-self.radius
+                oy = y1-y0-self.radius
+                # новое положение состояния
+                self.active_elp.pos = [touch.x-self.radius, touch.y-self.radius]
+                # перемещение конекторов            
+                for conn in self.connector:
+                    conn.pos = (conn.pos[0]+ox, conn.pos[1]+oy)
+                # перемещение подписи
+                self.labels[i].pos = (self.labels[i].pos[0]+ox, self.labels[i].pos[1]+oy)
         return super().on_touch_down(touch)
-        
+            
 
 
 class LaplaceApp(App):
