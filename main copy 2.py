@@ -4,12 +4,15 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
-from kivy.graphics import Ellipse
-from kivy.graphics import Color
+from kivy.graphics import Ellipse, Color, Bezier, Triangle
+
 from kivy.graphics import Line
 import math
 from math_func import Geometric
 geo = Geometric()
+
+
+
 
 class Condition(Widget):
       
@@ -18,24 +21,22 @@ class Condition(Widget):
         
         self.count = 0
         self.radius = 50
-
         self.labels =[]
-            
-
         self.elps = []     
         self.active_elp = None
-
         self.connector = None
         self.active_conn = None
+        self.start_draw_bezie = False
         
-
         Window.bind(mouse_pos=self.on_motion)
-    
-    def on_motion(self, window, touch):
-        print(window)
 
-        if self.active_elp:
-           
+    def bezie_point(self, start_points, stop):
+       pass
+
+
+    def on_motion(self, window, touch):
+        
+        if self.active_elp:           
             # если курсор выходит за радиус элепса + 10 рх
             if not geo.cross_cursor(self.active_elp.pos, touch, self.radius, dopusk=20):
                 # удаление конекторов
@@ -55,7 +56,6 @@ class Condition(Widget):
                     if not geo.cross_cursor(self.active_conn.pos, touch, 5, dopusk=5):
                         self.active_conn = None
                         Window.set_system_cursor("arrow")
-                
         else:
             for elp in self.elps:
                 # ищем пересечение                
@@ -70,25 +70,42 @@ class Condition(Widget):
                                 self.connector.append(Ellipse(pos=(conn[0],conn[1]), size=(self.radius-40,self.radius-40)))
                     # запоминаем выбранное состояние            
                     self.active_elp = elp
-            
-        
-
-
+       
     def on_touch_down(self, touch):
+        #блокировка при соединении элипсов
         if self.active_conn:
-            print('go')
-
-
-
-
-
-
-
+            self.start_draw_bezie = True
+            # закидываем координаты выбранного коннектора
+            touch.ud['position_active_conn'] = self.active_conn.pos
+            touch.ud['number_start_elp'] = self.elps.index(self.active_elp)
+            with self.canvas:
+                self.bezierline = Bezier()
+            
+        return super().on_touch_down(touch)
+    
+    def on_touch_up(self, touch):
+        if self.start_draw_bezie:
+            self.start_draw_bezie = False
+            
+            
+            if not self.active_conn:
+                self.canvas.remove(self.bezierline)
+            else:
+                touch.ud['number_finish_elp'] = self.elps.index(self.active_elp)
+                self.bezierline.points = [self.bezierline.points[0], self.bezierline.points[1], self.active_conn.pos[0]+5,self.active_conn.pos[1]+5]
+                conection = [touch.ud['number_start_elp'],touch.ud['number_finish_elp'] ]
+                print(conection)
+ 
+        return super().on_touch_up(touch)
 
     def on_touch_move(self, touch):
         #на рефакирпе сделатьпередачу через touch.ud["select_elp"] и self.collide_point
-        if self.active_conn:
-            pass
+        if self.start_draw_bezie:
+            
+            x, y = touch.ud['position_active_conn']
+
+            
+            self.bezierline.points = [x+5 ,y+5, touch.x, touch.y]
         else:
             if self.active_elp:
                 i = self.elps.index(self.active_elp)
@@ -104,9 +121,8 @@ class Condition(Widget):
                     conn.pos = (conn.pos[0]+ox, conn.pos[1]+oy)
                 # перемещение подписи
                 self.labels[i].pos = (self.labels[i].pos[0]+ox, self.labels[i].pos[1]+oy)
-        return super().on_touch_down(touch)
-            
 
+        return super().on_touch_down(touch)
 
 class LaplaceApp(App):
     def build(self):
@@ -141,7 +157,6 @@ class LaplaceApp(App):
     def add_connection(self, instance):
         if self.painter.check_elps:
             pass
-
  
 if __name__ == '__main__':
     LaplaceApp().run()
