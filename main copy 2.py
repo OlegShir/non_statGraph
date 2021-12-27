@@ -8,10 +8,8 @@ from kivy.graphics import Ellipse, Color, Bezier, Triangle
 
 from kivy.graphics import Line
 import math
-from math_func import Geometric
+from math_func import Geometric, Matrix
 geo = Geometric()
-
-
 
 
 class Condition(Widget):
@@ -27,11 +25,8 @@ class Condition(Widget):
         self.connector = None
         self.active_conn = None
         self.start_draw_bezie = False
-        
+        # отслеживание курсора мышки
         Window.bind(mouse_pos=self.on_motion)
-
-    def bezie_point(self, start_points, stop):
-       pass
 
 
     def on_motion(self, window, touch):
@@ -41,9 +36,10 @@ class Condition(Widget):
             if not geo.cross_cursor(self.active_elp.pos, touch, self.radius, dopusk=20):
                 # удаление конекторов
                 for conn in self.connector: self.canvas.remove(conn)
+                # очистка переменных
                 self.connector = None
                 self.active_elp = None
-                self.active_conn =None
+                self.active_conn = None
             else:
                 if not self.active_conn:
                     # если попадаем в конектор
@@ -54,6 +50,7 @@ class Condition(Widget):
                             Window.set_system_cursor("hand")
                 else:
                     if not geo.cross_cursor(self.active_conn.pos, touch, 5, dopusk=5):
+                        
                         self.active_conn = None
                         Window.set_system_cursor("arrow")
         else:
@@ -75,24 +72,32 @@ class Condition(Widget):
         #блокировка при соединении элипсов
         if self.active_conn:
             self.start_draw_bezie = True
-            # закидываем координаты выбранного коннектора
+            # сохранение позиции коннектора от которова производится соединение
             touch.ud['position_active_conn'] = self.active_conn.pos
+            # сохранение номера элипса от которова производится соединение
             touch.ud['number_start_elp'] = self.elps.index(self.active_elp)
+            # отображение "временной" линии Безье
             with self.canvas:
                 self.bezierline = Bezier()
             
         return super().on_touch_down(touch)
     
     def on_touch_up(self, touch):
+
+        # при условии рисования линии Безье
         if self.start_draw_bezie:
             self.start_draw_bezie = False
-            
-            
+
+            # если конец линии Безье не соединен с коннектором
             if not self.active_conn:
+                # удаление "временной" линии Безье
                 self.canvas.remove(self.bezierline)
             else:
+                # сохранение номера элипса с которым производится соединение
                 touch.ud['number_finish_elp'] = self.elps.index(self.active_elp)
+                # запись координат начало и конца линии Безье
                 self.bezierline.points = [self.bezierline.points[0], self.bezierline.points[1], self.active_conn.pos[0]+5,self.active_conn.pos[1]+5]
+                # список номеров элепсов, которые соединяет линия Безье
                 conection = [touch.ud['number_start_elp'],touch.ud['number_finish_elp'] ]
                 print(conection)
  
@@ -100,15 +105,18 @@ class Condition(Widget):
 
     def on_touch_move(self, touch):
         #на рефакирпе сделатьпередачу через touch.ud["select_elp"] и self.collide_point
-        if self.start_draw_bezie:
-            
-            x, y = touch.ud['position_active_conn']
 
-            
+        # в случае если рисуется линия Безье
+        if self.start_draw_bezie:
+            # получение координат началалинии Безье            
+            x, y = touch.ud['position_active_conn']
+            # перерисовка линии Безье
             self.bezierline.points = [x+5 ,y+5, touch.x, touch.y]
+        # перемещение элипса
         else:
             if self.active_elp:
-                i = self.elps.index(self.active_elp)
+                # позиция выбранного элипса  в списке
+                index = self.elps.index(self.active_elp)
                 # получаем координаты для пересчета движения       
                 x0, y0 ,x1, y1 = *self.active_elp.pos, touch.x, touch.y
                 # разница между курсором и центром элипса
@@ -120,7 +128,7 @@ class Condition(Widget):
                 for conn in self.connector:
                     conn.pos = (conn.pos[0]+ox, conn.pos[1]+oy)
                 # перемещение подписи
-                self.labels[i].pos = (self.labels[i].pos[0]+ox, self.labels[i].pos[1]+oy)
+                self.labels[index].pos = (self.labels[index].pos[0]+ox, self.labels[index].pos[1]+oy)
 
         return super().on_touch_down(touch)
 
@@ -132,7 +140,8 @@ class LaplaceApp(App):
 
         parent.add_widget(Button(text = 'Добавить\n состояние', halign='center', on_press=self.add_condition, size =(100,50)))
         parent.add_widget(Button(text = 'Удалить\n состояние', halign='center', on_press=self.del_condition, pos  = (105,0), size =(100,50)))
-        parent.add_widget(Button(text = 'Добавить\n переход', halign='center', on_press=self.add_connection, pos  = (210,0), size =(100,50)))
+
+        self.matrix = Matrix()
         
         return parent
 
@@ -141,6 +150,7 @@ class LaplaceApp(App):
             Color(1,1,1)
             self.painter.elps.append(Ellipse(pos=(200,200), size=(2*self.painter.radius,2*self.painter.radius),))
             self.painter.labels.append(Label(text=str(self.painter.count), font_size = 60, halign='left', pos=(200,200), color=(0,0,0)))
+        self.matrix.extension()
         self.painter.count += 1
 
     def del_condition(self, instance):
@@ -153,10 +163,7 @@ class LaplaceApp(App):
             self.painter.canvas.remove(self.painter.check_elps)
             self.painter.canvas.remove(self.painter.line)
             self.painter.count -= 1
+            self.matrix.compression()
 
-    def add_connection(self, instance):
-        if self.painter.check_elps:
-            pass
- 
 if __name__ == '__main__':
     LaplaceApp().run()

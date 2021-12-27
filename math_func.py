@@ -1,5 +1,5 @@
 import math
-from typing import Tuple
+import numpy as np
 
 class Geometric:
     def __init__(self) -> None:
@@ -30,9 +30,43 @@ class Geometric:
 
         return [conn_1, conn_2, conn_3, conn_4]
 
-if __name__ == "__main__":
-    g = Geometric()
-    a=(333,455)
-    b=(434,434)
-    print(g.cross_cursor_ellipse(a,b,55))
+class Matrix:
+
+    def __init__(self) -> None:
+        self.matrix = np.array([0])
+
+    def extension(self, axis = None):
+        if not axis:
+            shape = self.matrix.shape
+            
+            try:
+                shape_row = shape[1]
+            except:
+                shape_row = 1
+            shape_column = shape[0]
+
+            new_row = np.array(np.zeros(shape_row, dtype=int))
+            new_column = np.array(np.zeros((shape_column+1, 1), dtype=int))
+
+            # добавление строки
+            self.matrix = np.vstack([self.matrix, new_row])
+            # добавление столбца
+            self.matrix = np.hstack((self.matrix, new_column))
+            
+            print(self.matrix)
     
+    def compression(self, row_column):
+        self.matrix = np.delete(self.matrix, row_column, 0)
+        self.matrix = np.delete(self.matrix, row_column, 1)
+
+        print(self.matrix)
+
+
+
+if __name__ == "__main__":
+    g = Matrix()
+    g.extension()
+    g.extension()
+    g.extension()
+
+    g.compression(2)
