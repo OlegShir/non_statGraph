@@ -4,9 +4,8 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
-from kivy.graphics import Ellipse, Color, Bezier, Triangle
+from kivy.graphics import Ellipse, Color, Bezier, Line, Triangle
 
-from kivy.graphics import Line
 import math
 from math_func import Geometric, Matrix
 geo = Geometric()
@@ -30,7 +29,8 @@ class Condition(Widget):
 
 
     def on_motion(self, window, touch):
-        
+        """Метод отслеживания перемещения мышки по рабочей области.
+        """
         if self.active_elp:           
             # если курсор выходит за радиус элепса + 10 рх
             if not geo.cross_cursor(self.active_elp.pos, touch, self.radius, dopusk=20):
@@ -69,6 +69,8 @@ class Condition(Widget):
                     self.active_elp = elp
        
     def on_touch_down(self, touch):
+        """
+        """
         #блокировка при соединении элипсов
         if self.active_conn:
             self.start_draw_bezie = True
