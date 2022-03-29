@@ -70,3 +70,6 @@ if __name__ == "__main__":
     g.extension()
 
     g.compression(2)
+
+    g.matrix[1,1]='None'
+    print(g.matrix)
