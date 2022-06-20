@@ -1,4 +1,3 @@
-from re import A
 from kivy.core.window import Window
 from kivy.app import App
 from kivy.uix.label import Label
@@ -6,10 +5,6 @@ from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.graphics import Ellipse, Color, Bezier, Line, Triangle
-import copy
-
-
-import math
 from math_func import Geometric, Matrix
 geo = Geometric()
 
@@ -31,21 +26,21 @@ class Condition(Widget):
 
         self.start_draw_bezie = False
         self.bezierline_array =[]
+
         self.bezierline_conn_array = []
         self.bezierline_conn_move = False
         self.active_bezierline_conn = None
 
         self.triangle_array = []
+
         self.check_elps = None
         self.check_elps_line = None
 
         # отслеживание курсора мышки
         Window.bind(mouse_pos=self.on_motion)
 
-
     def on_motion(self, window, touch):
-        """Метод отслеживания перемещения мышки по рабочей области.
-        """
+        """Метод отслеживания перемещения мышки по рабочей области."""
         if self.active_elp:           
             # если курсор выходит за радиус элепса + 10 рх
             if not geo.cross_cursor(self.active_elp.pos, touch, self.radius, dopusk=20):
@@ -90,8 +85,6 @@ class Condition(Widget):
                         Window.set_system_cursor("arrow")
                         self.bezierline_conn_move = False
                         self.active_bezierline_conn = None
-                        
-
 
     def on_touch_down(self, touch):
         #блокировка при соединении элипсов
@@ -124,11 +117,9 @@ class Condition(Widget):
         return super().on_touch_down(touch)
     
     def on_touch_up(self, touch):
-
         # при условии рисования линии Безье
         if self.start_draw_bezie:
             self.start_draw_bezie = False
-
             # если конец линии Безье не соединен с коннектором
             if self.active_conn:
                 # сохранение номера элипса с которым производится соединение
@@ -139,23 +130,22 @@ class Condition(Widget):
                     Color(1,1,0)
                     self.triangle_now = Triangle(points = point_triangle)
                     self.bezierline_now = Bezier(points=[self.bezierline.points[0], self.bezierline.points[1], touch.ud['bezie_3_point'][0], touch.ud['bezie_3_point'][1],self.active_conn.pos[0]+5,self.active_conn.pos[1]+5])
-                    self.bezierline_conn_now = Ellipse(pos = touch.ud['bezie_3_point'], size=(5,5) )
+                    self.bezierline_conn_now = Ellipse(pos = touch.ud['bezie_3_point'], size=(5,5))
+                #добавляем все элементы в список
                 self.bezierline_array.append(self.bezierline_now)
-                self.bezierline_conn_array.append(self.bezierline_conn)
+                self.bezierline_conn_array.append(self.bezierline_conn_now)
                 self.triangle_array.append(self.triangle_now)
                 # список номеров элепсов, которые соединяет линия Безье
                 conection = [touch.ud['number_start_elp'],touch.ud['number_finish_elp'] ]
-            
+           
             # удаление "временной" линии Безье
             self.canvas.remove(self.bezierline)
             self.canvas.remove(self.bezierline_conn)
                 
- 
         return super().on_touch_up(touch)
 
     def on_touch_move(self, touch):
         #на рефакирпе сделатьпередачу через touch.ud["select_elp"] и self.collide_point
-
         # в случае если рисуется линия Безье
         if self.start_draw_bezie:
             # получение координат началалинии Безье            
@@ -174,15 +164,15 @@ class Condition(Widget):
             index = self.bezierline_conn_array.index(self.active_bezierline_conn)
             x0, y0 ,x1, y1 = *self.active_bezierline_conn.pos, touch.x, touch.y
             # разница между курсором и точки линии безье 
-            ox = x1-x0-10
-            oy = y1-y0-10
+            ox = x1-x0-5
+            oy = y1-y0-5
             #получение линии безье, которая будет менятся
             bezierline = self.bezierline_array[index]
             # новое положение середины линии безье
             points = [bezierline.points[0],bezierline.points[1],bezierline.points[2]+ox,bezierline.points[3]+oy,bezierline.points[4],bezierline.points[5]]
             self.bezierline_array[index].points = points
             # новое положение точки линии безье
-            opp = [x1-10, y1-10]
+            opp = [x1-5, y1-5]
             self.bezierline_conn_array[index].pos = opp
             print(self.active_bezierline_conn.pos, '///', touch.x, '///', touch.y, index)
             #изменение стрелки
@@ -213,10 +203,6 @@ class Condition(Widget):
                     conn.pos = (conn.pos[0]+ox, conn.pos[1]+oy)
                 # перемещение подписи
                 self.labels[index].pos = (self.labels[index].pos[0]+ox, self.labels[index].pos[1]+oy)
-
-
-
-                #print(x0, y0 ,x1, y1)
 
         return super().on_touch_down(touch)
 
