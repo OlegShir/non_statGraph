@@ -22,14 +22,21 @@ class Geometric:
         Формрование центров координат коннекторов
         '''
         pos_x, pos_y = ellips_pos
-        conn_1 = (pos_x-5, pos_y+45)
-        conn_2 = (pos_x+45, pos_y-5)
-        conn_3 = (pos_x+95, pos_y+45)
-        conn_4 = (pos_x+45, pos_y+95)
+        conn_1 = [pos_x-5, pos_y+45]
+        conn_2 = [pos_x+45, pos_y-5]
+        conn_3 = [pos_x+95, pos_y+45]
+        conn_4 = [pos_x+45, pos_y+95]
 
         return [conn_1, conn_2, conn_3, conn_4]
 
-    def middle_point(self, array_points):
+    def connector_number(self, con_pos:list, touch) -> int:
+        '''Определение номера коннектора'''
+
+        pass 
+
+
+
+    def middle_point(self, array_points:list) -> float and list:
         '''Определение середины отрезка'''
         x0, y0, x1, y1 = array_points
         x_mid = (x1+x0)/2

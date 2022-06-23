@@ -7,6 +7,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.graphics import Ellipse, Color, Bezier, Line, Triangle
 from numpy import array
 from math_func import Geometric, Matrix
+from connector import Connectors
+from  bezie_line import Bezier_line
 geo = Geometric()
 
 
@@ -22,18 +24,15 @@ class Condition(Widget):
         self.elps = []     
         self.active_elp = None
 
-        self.connector = None
-        self.active_conn = None
-        self.connector_array = []
+        self.show_connectors = False
+        self.active_connector = False
+        self.connectors_array = []
 
+        self.bizie_line = None
+        self.bezier_line_array =[]
         self.start_draw_bezie = False
-        self.bezierline_array =[]
-
-        self.bezierline_conn_array = []
-        self.bezierline_conn_move = False
-        self.active_bezierline_conn = None
-
-        self.triangle_array = []
+        self.active_bezier_line = False
+        
 
         self.check_elps = None
         self.check_elps_line = None
@@ -43,64 +42,61 @@ class Condition(Widget):
 
     def on_motion(self, window, touch):
         """Метод отслеживания перемещения мышки по рабочей области."""
-        if self.active_elp:           
-            # если курсор выходит за радиус элепса + 10 рх
-            if not geo.cross_cursor(self.active_elp.pos, touch, self.radius, dopusk=20):
-                # удаление конекторов
-                for conn in self.connector: self.canvas.remove(conn)
+        # если курсор находится в элепсе состояния
+        if self.active_elp:
+            # если курсор выходит за радиус элепса состояния + 10 рх
+            if not geo.cross_cursor(self.active_elp.pos, touch, self.radius, dopusk=10):
+                # скрытие коннекторов
+                for connector in self.connectors_array: connector.hide_connectors()
                 # очистка переменных
-                self.connector = None
                 self.active_elp = None
-                self.active_conn = None
+                self.show_connectors = None
             else:
-                if not self.active_conn:
-                    # если попадаем в конектор
-                    for i, conn in enumerate(self.connector):
-                        if geo.cross_cursor(conn.pos, touch, 5, dopusk=5):
-                            self.active_conn = conn
-                            Window.set_system_cursor("hand")
+                # если курсор находится на коннекторе
+                if self.show_connectors.find_select_connector(touch):
+                    Window.set_system_cursor("hand")
                 else:
-                    if not geo.cross_cursor(self.active_conn.pos, touch, 5, dopusk=5):
-                        self.active_conn = None
-                        Window.set_system_cursor("arrow")
+                    Window.set_system_cursor("arrow")
+                self.active_connector = self.show_connectors.active_connector
+                print(self.active_connector)
         else:
-            for elp in self.elps:
-                # ищем пересечение                
+            for i, elp in enumerate(self.elps):
+                # ищем пересечение курсора и элепса состояния               
                 if geo.cross_cursor(elp.pos, touch, self.radius):
-                    # рисуем коннекторы
-                    if not self.connector:
-                        self.connector = []
-                        center_conn = geo.connector_pos(elp.pos)
-                        with self.canvas:
-                            Color(1,0,0)
-                            for conn in center_conn:
-                                self.connector.append(Ellipse(pos=(conn[0],conn[1]), size=(self.radius-40,self.radius-40)))
-                    # запоминаем выбранное состояние            
+                    # если не существуют коннекторов для элепса состояния
+                    try:
+                        _ = self.connectors_array[i]
+                    except:
+                        connectors = Connectors(elp.pos, self.canvas)
+                        self.connectors_array.append(connectors)
+                    # показываемые коннекторы
+                    self.show_connectors = self.connectors_array[i]
+                    self.show_connectors.show_connectors()
+                    # запоминаем выбранный элипс состояния         
                     self.active_elp = elp
-            if not self.active_elp and self.bezierline_conn_array != []:
-                for bizier_conn in self.bezierline_conn_array:
-                    if geo.cross_cursor(bizier_conn.pos, touch, 10, dopusk=5):
+                    break
+            #   
+            if not self.active_elp and self.bezier_line_array != []:
+                for self.bezier_line in self.bezier_line_array:
+                    if geo.cross_cursor(self.bezier_line.control_point, touch, 10, dopusk=5):
                         Window.set_system_cursor("hand")
-                        self.bezierline_conn_move = True
-                        self.active_bezierline_conn = bizier_conn
+                        self.active_bezier_line = True
+                        print('yes')
                     else:
                         Window.set_system_cursor("arrow")
-                        self.bezierline_conn_move = False
-                        self.active_bezierline_conn = None
+                        self.active_bezier_line = False
+                        print('no')
+
 
     def on_touch_down(self, touch):
-        #блокировка при соединении элипсов
-        if self.active_conn:
-            self.start_draw_bezie = True
-            # сохранение позиции коннектора от которова производится соединение
-            touch.ud['position_active_conn'] = self.active_conn.pos
-            # сохранение номера элипса от которова производится соединение
-            touch.ud['number_start_elp'] = self.elps.index(self.active_elp)
-            # отображение "временной" линии Безье и ее центра
-            with self.canvas:
-                Color(1,0,0)
-                self.bezierline = Bezier()
-                self.bezierline_conn = Ellipse(size=(5,5) )
+        #блокировка при соединении элипсов состояния
+        if self.active_connector:
+            self.start_draw_bezie = True            
+            self.bizie_line = Bezier_line(self.canvas)
+            self.bizie_line.start_create_bezier_line()
+            # сохранения номер элипса состояния и коннектор
+            touch.ud['start_elp_sondition_index'] = self.elps.index(self.active_elp)
+            touch.ud['start_connector_index'] = self.active_connector
         # выделение состояния
         if self.active_elp and self.active_elp != self.check_elps:
             if self.check_elps: self.canvas.remove(self.check_elps_line)
@@ -108,12 +104,14 @@ class Condition(Widget):
                 Color(1,1,0)
                 self.check_elps_line = Line(circle=(self.active_elp.pos[0]+self.radius, self.active_elp.pos[1]+self.radius, self.radius),width=3)
                 self.check_elps = self.active_elp
-        elif not self.active_elp :
+        elif not self.active_elp:
             if self.check_elps: 
                 self.canvas.remove(self.check_elps_line)
                 self.check_elps = None
+                '''
             if self.active_bezierline_conn:
                 print('Conn active')
+                '''
         
       
         return super().on_touch_down(touch)
@@ -122,45 +120,33 @@ class Condition(Widget):
         # при условии рисования линии Безье
         if self.start_draw_bezie:
             self.start_draw_bezie = False
-            # если конец линии Безье не соединен с коннектором
-            if self.active_conn:
+            # если конец линии Безье соединен с коннектором
+            if self.active_connector:
+                print('ok')
                 # сохранение номера элипса с которым производится соединение
-                touch.ud['number_finish_elp'] = self.elps.index(self.active_elp)
-                # запись координат начало и конца линии Безье
-                point_triangle = geo.get_triangle_bezie_line(self.bezierline.points[0], self.bezierline.points[1], self.active_conn.pos[0]+5,self.active_conn.pos[1]+5)
-                with self.canvas:
-                    Color(1,1,0)
-                    self.triangle_now = Triangle(points = point_triangle)
-                    self.bezierline_now = Bezier(points=[self.bezierline.points[0], self.bezierline.points[1], touch.ud['bezie_3_point'][0], touch.ud['bezie_3_point'][1],self.active_conn.pos[0]+5,self.active_conn.pos[1]+5])
-                    self.bezierline_conn_now = Ellipse(pos = touch.ud['bezie_3_point'], size=(5,5))
+                touch.ud['finish_elp_sondition_index'] = self.elps.index(self.active_elp)
+                # остановка рисования лини Безье
+                x,y = self.connectors_array[touch.ud['finish_elp_sondition_index']].get_position_connector(self.active_connector)
+                self.bizie_line.stop_create_bzezier_line(x,y)
                 #добавляем все элементы в список
-                self.bezierline_array.append(self.bezierline_now)
-                self.bezierline_conn_array.append(self.bezierline_conn_now)
-                self.triangle_array.append(self.triangle_now)
+                self.bezier_line_array.append(self.bizie_line)
                 # список номеров элепсов, которые соединяет линия Безье
-                conection = [touch.ud['number_start_elp'],touch.ud['number_finish_elp'] ]
-           
-            # удаление "временной" линии Безье
-            self.canvas.remove(self.bezierline)
-            self.canvas.remove(self.bezierline_conn)
+                conection =  [touch.ud['start_elp_sondition_index'],touch.ud['finish_elp_sondition_index']]
+            # удаление, если конец линии Безье не соединен с коннектором
+            else:
+                print('no')
+                self.bizie_line.remove()
                 
         return super().on_touch_up(touch)
 
     def on_touch_move(self, touch):
-        #на рефакирпе сделатьпередачу через touch.ud["select_elp"] и self.collide_point
         # в случае если рисуется линия Безье
         if self.start_draw_bezie:
-            # получение координат началалинии Безье            
-            x, y = touch.ud['position_active_conn']
-            points_bezierline = [x+5 ,y+5, touch.x, touch.y]
-            # перерисовка линии Безье
-            len_bezierline, points_bezier_conn = geo.middle_point(points_bezierline)
-            touch.ud['bezie_3_point'] = points_bezier_conn
-            #print(  points_bezierline, '--------', points_bezier_conn )
-            if len_bezierline > 20:
-                self.bezierline_conn.pos = points_bezier_conn
-            self.bezierline.points = points_bezierline
-        
+            # получение координат началалинии Безье  
+            x, y = self.connectors_array[touch.ud['start_elp_sondition_index']].get_position_connector(touch.ud['start_connector_index'])
+            # перерисовка линии Безье          
+            self.bizie_line.drawing_bezier_line([x+5 ,y+5, touch.x, touch.y])
+            '''
         elif self.bezierline_conn_move:
             # позиция выбранной точки линии бизье в списке
             index = self.bezierline_conn_array.index(self.active_bezierline_conn)
@@ -179,11 +165,11 @@ class Condition(Widget):
             #изменение положения стрелки
             point_triangle = geo.get_triangle_bezie_line(points[2],points[3],points[4],points[5])
             self.triangle_array[index].points = point_triangle
-                            
+            '''                    
         # перемещение элипса
         else:
             if self.active_elp:
-                # позиция выбранного элипса  в списке
+                # позиция выбранного элипса состояния в списке
                 index = self.elps.index(self.active_elp)
                 # получаем координаты для пересчета движения       
                 x0, y0 ,x1, y1 = *self.active_elp.pos, touch.x, touch.y
@@ -199,9 +185,8 @@ class Condition(Widget):
                         points[i] += ox
                         points[i + 1] += oy
                 self.check_elps_line.points = points
-                # перемещение конекторов            
-                for conn in self.connector:
-                    conn.pos = (conn.pos[0]+ox, conn.pos[1]+oy)
+                # перерисовка и изменение позиции коннекторов
+                self.connectors_array[index].change_connectors_position(ox, oy)
                 # перемещение подписи
                 self.labels[index].pos = (self.labels[index].pos[0]+ox, self.labels[index].pos[1]+oy)
 
@@ -225,7 +210,8 @@ class LaplaceApp(App):
             self.painter.elps.append(Ellipse(pos=(200,200), size=(2*self.painter.radius,2*self.painter.radius),))
             self.painter.labels.append(Label(text=str(self.painter.count), font_size = 60, halign='left', pos=(200,200), color=(0,0,0)))
         #self.matrix.extension()
-        self.painter.connector_array.append(geo.connector_pos([200,200]))
+        #self.painter.connector_array.append(geo.connector_pos([200,200]))
+        #self.painter.connected_conn.append([False, False, False, False])
         self.painter.count += 1
 
     def del_condition(self, instance):
