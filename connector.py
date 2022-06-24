@@ -3,14 +3,14 @@ import math
 
 
 class Connectors():
-    def __init__(self, ellipse_condition_pos , canvas) -> None:
+    def __init__(self, ellipse_condition_pos , canvas, bezier_aray) -> None:
         self.radius = 5
         self.ellipse_condition_pos = ellipse_condition_pos
         self.canvas = canvas
         self.connector_image = []
         self.connectors_position = self.connector_pos(self.ellipse_condition_pos)
         self.active_connector = False
-
+ 
     def connector_pos(self, ellips_pos):
         '''Формрование центров координат коннекторов.'''
         pos_x, pos_y = ellips_pos
@@ -50,7 +50,7 @@ class Connectors():
             self.connectors_position[i][0] += ox 
             self.connectors_position[i][1] += oy
             self.connector_image[i].pos = (self.connector_image[i].pos[0]+ox,  self.connector_image[i].pos[1]+oy)
-
+        
     def get_position_connector(self, connector):
 
             x, y =  self.connectors_position[connector]

@@ -9,6 +9,7 @@ from numpy import array
 from math_func import Geometric, Matrix
 from connector import Connectors
 from  bezie_line import Bezier_line
+from settings import *
 geo = Geometric()
 
 
@@ -27,11 +28,13 @@ class Condition(Widget):
         self.show_connectors = False
         self.active_connector = False
         self.connectors_array = []
+        self.mouse_on_connector = False
 
         self.bizie_line = None
         self.bezier_line_array =[]
         self.start_draw_bezie = False
         self.active_bezier_line = False
+        self.selected_bezier_line = None
         
 
         self.check_elps = None
@@ -55,10 +58,11 @@ class Condition(Widget):
                 # если курсор находится на коннекторе
                 if self.show_connectors.find_select_connector(touch):
                     Window.set_system_cursor("hand")
+                    self.mouse_on_connector = True
                 else:
                     Window.set_system_cursor("arrow")
+                    self.mouse_on_connector = False
                 self.active_connector = self.show_connectors.active_connector
-                print(self.active_connector)
         else:
             for i, elp in enumerate(self.elps):
                 # ищем пересечение курсора и элепса состояния               
@@ -75,28 +79,31 @@ class Condition(Widget):
                     # запоминаем выбранный элипс состояния         
                     self.active_elp = elp
                     break
-            #   
-            if not self.active_elp and self.bezier_line_array != []:
-                for self.bezier_line in self.bezier_line_array:
-                    if geo.cross_cursor(self.bezier_line.control_point, touch, 10, dopusk=5):
+            #  если курсор находится вне элипса состояния и существую линии Безье
+            if len(self.bezier_line_array) > 0:
+                # производится проверка, на то что курсор находится на точке изменения линии Безье
+                for i, line in enumerate(self.bezier_line_array):
+                    if geo.cross_cursor(line.points_control, touch, 10, dopusk=5):
                         Window.set_system_cursor("hand")
                         self.active_bezier_line = True
-                        print('yes')
-                    else:
-                        Window.set_system_cursor("arrow")
-                        self.active_bezier_line = False
-                        print('no')
-
-
+                        self.selected_bezier_line = i
+                        break
+                    Window.set_system_cursor("arrow")
+                    self.active_bezier_line = False
+                    self.selected_bezier_line = None
+                
     def on_touch_down(self, touch):
         #блокировка при соединении элипсов состояния
-        if self.active_connector:
+        if self.mouse_on_connector:
             self.start_draw_bezie = True            
             self.bizie_line = Bezier_line(self.canvas)
             self.bizie_line.start_create_bezier_line()
             # сохранения номер элипса состояния и коннектор
             touch.ud['start_elp_sondition_index'] = self.elps.index(self.active_elp)
             touch.ud['start_connector_index'] = self.active_connector
+
+            # добавление линии в массив
+
         # выделение состояния
         if self.active_elp and self.active_elp != self.check_elps:
             if self.check_elps: self.canvas.remove(self.check_elps_line)
@@ -108,12 +115,11 @@ class Condition(Widget):
             if self.check_elps: 
                 self.canvas.remove(self.check_elps_line)
                 self.check_elps = None
-                '''
-            if self.active_bezierline_conn:
-                print('Conn active')
-                '''
-        
-      
+            if self.active_bezier_line:
+                # меняем цвет всех линий на дефолтный - потом можно оптимизировать
+                for line in self.bezier_line_array: line.change_color(COLOR_DEFAULD)
+                self.bezier_line_array[self.selected_bezier_line].change_color(COLOR_SELECTED)
+
         return super().on_touch_down(touch)
     
     def on_touch_up(self, touch):
@@ -121,20 +127,19 @@ class Condition(Widget):
         if self.start_draw_bezie:
             self.start_draw_bezie = False
             # если конец линии Безье соединен с коннектором
-            if self.active_connector:
-                print('ok')
+            if self.mouse_on_connector:
                 # сохранение номера элипса с которым производится соединение
                 touch.ud['finish_elp_sondition_index'] = self.elps.index(self.active_elp)
                 # остановка рисования лини Безье
                 x,y = self.connectors_array[touch.ud['finish_elp_sondition_index']].get_position_connector(self.active_connector)
-                self.bizie_line.stop_create_bzezier_line(x,y)
+                self.bizie_line.end_create_bzezier_line(x,y)
                 #добавляем все элементы в список
                 self.bezier_line_array.append(self.bizie_line)
                 # список номеров элепсов, которые соединяет линия Безье
                 conection =  [touch.ud['start_elp_sondition_index'],touch.ud['finish_elp_sondition_index']]
+                self.show_connectors.add_link(touch.ud['finish_elp_sondition_index'], 'in', self.bizie_line)
             # удаление, если конец линии Безье не соединен с коннектором
             else:
-                print('no')
                 self.bizie_line.remove()
                 
         return super().on_touch_up(touch)
@@ -146,26 +151,10 @@ class Condition(Widget):
             x, y = self.connectors_array[touch.ud['start_elp_sondition_index']].get_position_connector(touch.ud['start_connector_index'])
             # перерисовка линии Безье          
             self.bizie_line.drawing_bezier_line([x+5 ,y+5, touch.x, touch.y])
-            '''
-        elif self.bezierline_conn_move:
-            # позиция выбранной точки линии бизье в списке
-            index = self.bezierline_conn_array.index(self.active_bezierline_conn)
-            x0, y0 ,x1, y1 = *self.active_bezierline_conn.pos, touch.x, touch.y
-            # разница между курсором и точки линии безье 
-            ox = x1-x0-5
-            oy = y1-y0-5
-            #получение линии безье, которая будет менятся
-            bezierline = self.bezierline_array[index]
-            # новое положение середины линии безье
-            points = [bezierline.points[0],bezierline.points[1],bezierline.points[2]+2*ox,bezierline.points[3]+2*oy,bezierline.points[4],bezierline.points[5]]
-            self.bezierline_array[index].points = points
-            # новое положение точки линии безье
-            new_point_bezierline_conn = [x1-5, y1-5]
-            self.bezierline_conn_array[index].pos = new_point_bezierline_conn
-            #изменение положения стрелки
-            point_triangle = geo.get_triangle_bezie_line(points[2],points[3],points[4],points[5])
-            self.triangle_array[index].points = point_triangle
-            '''                    
+        elif self.active_bezier_line:
+            # изменяем позицию текущей линии bezie
+            self.bezier_line_array[self.selected_bezier_line].change_third_point(touch.x, touch.y)
+                                 
         # перемещение элипса
         else:
             if self.active_elp:
