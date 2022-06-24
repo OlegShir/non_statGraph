@@ -83,10 +83,12 @@ class Condition(Widget):
                         Window.set_system_cursor("hand")
                         self.bezierline_conn_move = True
                         self.active_bezierline_conn = bizier_conn
+                        print('bizier_conn.pos')
                     else:
                         Window.set_system_cursor("arrow")
                         self.bezierline_conn_move = False
                         self.active_bezierline_conn = None
+                        print('z')
 
     def on_touch_down(self, touch):
         #блокировка при соединении элипсов
