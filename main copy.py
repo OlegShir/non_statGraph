@@ -7,8 +7,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.graphics import Ellipse, Color, Bezier, Line, Triangle
 from numpy import array
 from math_func import Geometric, Matrix
-from connector import Connectors
-from  bezie_line import Bezier_line
+from modules.connector import Connectors
+from  modules.bezie_line import Bezier_line
 from settings import *
 geo = Geometric()
 
@@ -137,7 +137,7 @@ class Condition(Widget):
                 self.bezier_line_array.append(self.bizie_line)
                 # список номеров элепсов, которые соединяет линия Безье
                 conection =  [touch.ud['start_elp_sondition_index'],touch.ud['finish_elp_sondition_index']]
-                self.show_connectors.add_link(touch.ud['finish_elp_sondition_index'], 'in', self.bizie_line)
+                #self.show_connectors.add_link(touch.ud['finish_elp_sondition_index'], 'in', self.bizie_line)
             # удаление, если конец линии Безье не соединен с коннектором
             else:
                 self.bizie_line.remove()
