@@ -37,13 +37,10 @@ class Condition():
                                     )
 
     def move_condition(self, touch)->None:
-        old_x, old_y, new_x, new_y = *self.condition_position, touch.x, touch.y
+        old_x, old_y, ox, oy = *self.condition_position, touch.dx, touch.dy
         # новое положение состояния
-        self.condition_position = [new_x-self.radius_condition, new_y-self.radius_condition]
+        self.condition_position = [old_x+ox, old_y+oy]
         self.condition_image.pos = self.condition_position
-        # разница между курсором и центром элипса
-        ox = new_x-old_x-self.radius_condition
-        oy = new_y-old_y-self.radius_condition
         # новое положение обводки
         points = self.lighter_image.points[:]
         for i in range(len(points)):

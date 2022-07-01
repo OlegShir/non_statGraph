@@ -7,11 +7,12 @@ from kivy.graphics import Ellipse, Color, Bezier, Line, Triangle
 from math_func import Geometric, Matrix
 
 from modules.condition import Condition
-from  modules.bezie_line import Bezier_line
+from modules.bezie_line import Bezier_line
+from modules.watcher_link import Watcher_link
 from settings import *
 
 geo = Geometric()
-
+watcher = Watcher_link()
 
 class Painter(Widget):
       
@@ -21,7 +22,7 @@ class Painter(Widget):
         self.count = 0
 
         self.conditions = []  
-        self.mouse_on_condition = None
+        self.mouse_on_condition = False
         self.check_condition = None
 
         self.active_connector = False
@@ -45,7 +46,7 @@ class Painter(Widget):
                 # скрытие коннекторов
                 self.mouse_on_condition.hide_connectors()
                 # очистка переменных
-                self.mouse_on_condition = None
+                self.mouse_on_condition = False
             else:
                 # если курсор находится на коннекторе
                 if self.mouse_on_condition.find_select_connector(touch):
@@ -114,12 +115,14 @@ class Painter(Widget):
             # если конец линии Безье соединен с коннектором
             if self.mouse_on_connector:
                 # сохранение номера элипса с которым производится соединение
-                #touch.ud['finish_elp_sondition_index'] = self.elps.index(self.active_elp)
+                touch.ud['finish_condition_connecning'] = self.mouse_on_condition.count
                 # остановка рисования лини Безье
-                x,y = self.mouse_on_condition.get_position_connector(self.active_connector)
-                self.bizie_line.end_create_bzezier_line(x,y)
-                #добавляем все элементы в список
-                self.bezier_line_array.append(self.bizie_line)
+                if watcher.add_link_in_storage(touch.ud['start_condition_connecning'],touch.ud['finish_condition_connecning'], self.bizie_line):
+                    x,y = self.mouse_on_condition.get_position_connector(self.active_connector)
+                    self.bizie_line.end_create_bzezier_line(x,y)
+                    self.bezier_line_array.append(self.bizie_line)
+                else:
+                    self.bizie_line.remove()
             # удаление, если конец линии Безье не соединен с коннектором
             else:
                 self.bizie_line.remove()
@@ -127,22 +130,31 @@ class Painter(Widget):
         return super().on_touch_up(touch)
 
     def on_touch_move(self, touch):
+        print(touch.dx, touch.dy)
         # в случае если рисуется линия Безье
         if self.start_draw_bezie:
             # получение координат началалинии Безье  
             x, y = self.conditions[touch.ud['start_condition_connecning']].get_position_connector(touch.ud['start_connector'])
             # перерисовка линии Безье          
-            self.bizie_line.drawing_bezier_line([x+5 ,y+5, touch.x, touch.y])
+            self.bizie_line.drawing_bezier_line([x+5 ,y+5, touch.x, touch.y], 'draw straight line')
         elif self.active_bezier_line:
             # изменяем позицию текущей линии bezie
-            self.bezier_line_array[self.selected_bezier_line].change_third_point(touch.x, touch.y)
+            self.bezier_line_array[self.selected_bezier_line].drawing_bezier_line([touch.x, touch.y], 'change middle point')
         # перемещение элипса
         else:
             if self.mouse_on_condition:
                 self.mouse_on_condition.move_condition(touch)
+                inner, outer = watcher.get_list_of_bezie(self.mouse_on_condition.count)
+                self.move_bezie(inner, [touch.dx, touch.dy])
 
         return super().on_touch_down(touch)
-
+    
+    def move_bezie(self, list_of_bezie, ee):
+        for _ in list_of_bezie:
+            index = self.bezier_line_array.index(_)
+            self.bezier_line_array[index].drawing_bezier_line(ee, 'change start point')
+        
+    
 class LaplaceApp(App):
     def build(self):
         parent = Widget()
@@ -156,11 +168,13 @@ class LaplaceApp(App):
     def add_condition(self, instance):
         '''Добавление состояний на пайнтер'''
         self.painter.conditions.append(Condition(self.painter.canvas, [200,200], self.painter.count))
+        watcher.expand_storage()
         self.painter.count += 1
 
     def del_condition(self, instance):
         if self.painter.check_condition:
             self.painter.conditions.pop(self.painter.check_condition.count)
+            watcher.reduce_storage(self.painter.check_condition.count)
             self.painter.check_condition = None
             self.change_lable()
     
