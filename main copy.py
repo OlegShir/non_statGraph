@@ -1,18 +1,22 @@
+from telnetlib import SE
 from kivy.core.window import Window
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
-from kivy.graphics import Ellipse, Color, Bezier, Line, Triangle
+from kivy.uix.textinput import TextInput
 
-from math_func import Geometric, Matrix
+
+from modules.math_func import Geometric
 
 from modules.condition import Condition
 from modules.bezie_line import Bezier_line
 from modules.watcher_link import Watcher_link
+from modules.inspector import Inspector
+from modules.select_law import SelectLaw
 from settings import *
 
+
 geo = Geometric()
-watcher = Watcher_link()
 
 class Painter(Widget):
       
@@ -23,17 +27,23 @@ class Painter(Widget):
 
         self.conditions = []  
         self.mouse_on_condition = False
-        self.check_condition = None
+        self.check_condition = False
 
         self.active_connector = False
         self.mouse_on_connector = False
 
-        self.bizie_line = None
+        self.bizie_line = False
         self.bezier_line_array =[]
         self.start_draw_bezie = False
+        self.mouse_on_bezier_line = False
         self.active_bezier_line = False
-        self.selected_bezier_line = None
+        self.selected_bezier_line = False
 
+        self.inspector = Inspector(self.conditions, self.bezier_line_array)
+        # добавленние кнопки выборазакона распределения
+        self.select_law = SelectLaw(self)
+        # добавление наблюдателя
+        self.watcher = Watcher_link()
         # отслеживание курсора мышки
         Window.bind(mouse_pos=self.on_motion)
 
@@ -42,7 +52,7 @@ class Painter(Widget):
         # если курсор находится в элепсе состояния
         if self.mouse_on_condition:
             # если курсор выходит за радиус элепса состояния + 10 рх
-            if not geo.cross_cursor(self.mouse_on_condition.condition_position, touch, RADIUS_CONDITION, dopusk=10):
+            if not geo.cross_cursor(self.mouse_on_condition.condition_position, touch, RADIUS_CONDITION, dopusk=15):
                 # скрытие коннекторов
                 self.mouse_on_condition.hide_connectors()
                 # очистка переменных
@@ -71,12 +81,12 @@ class Painter(Widget):
                 for i, line in enumerate(self.bezier_line_array):
                     if geo.cross_cursor(line.points_control, touch, 10, dopusk=5):
                         Window.set_system_cursor("hand")
-                        self.active_bezier_line = True
-                        self.selected_bezier_line = i
+                        self.mouse_on_bezier_line = True
+                        self.active_bezier_line = i
                         break
                     Window.set_system_cursor("arrow")
+                    self.mouse_on_bezier_line = False
                     self.active_bezier_line = False
-                    self.selected_bezier_line = None
                 
     def on_touch_down(self, touch):
         # блокировка при соединении состояний
@@ -90,6 +100,7 @@ class Painter(Widget):
 
         # выделение состояния
         if self.mouse_on_condition and self.mouse_on_condition != self.check_condition:
+            self.change_element()
             # если уже выбрано другое состаяние -> обводка с него убирается
             if self.check_condition: self.check_condition.hide_lighter()
             # создается обводка для нового состояния
@@ -100,11 +111,21 @@ class Painter(Widget):
         elif not self.mouse_on_condition:
             if self.check_condition: 
                 self.check_condition.hide_lighter()
-                self.check_condition = None
-            if self.active_bezier_line:
+                self.check_condition = False
+            # если курсор находится над линией Безье
+            if self.mouse_on_bezier_line:
                 # меняем цвет всех линий на дефолтный - потом можно оптимизировать
                 for line in self.bezier_line_array: line.change_color(COLOR_DEFAULD)
-                self.bezier_line_array[self.selected_bezier_line].change_color(COLOR_SELECTED)
+                # определение выбранной линни Безье
+                self.selected_bezier_line = self.bezier_line_array[self.active_bezier_line]
+                # установка цвета выбранной линии
+                self.selected_bezier_line.change_color(COLOR_SELECTED)
+                # включение кнопки выбора закона с передачей значения параметров линии
+                self.select_law.show(self.selected_bezier_line.law_param)
+            if self.selected_bezier_line and not geo.cross_zone(touch) and not self.mouse_on_bezier_line:
+                self.selected_bezier_line.set_value_label(self.select_law.get_law_param())
+                self.change_element()
+
 
         return super().on_touch_down(touch)
     
@@ -117,74 +138,78 @@ class Painter(Widget):
                 # сохранение номера элипса с которым производится соединение
                 touch.ud['finish_condition_connecning'] = self.mouse_on_condition.count
                 # остановка рисования лини Безье
-                if watcher.add_link_in_storage(touch.ud['start_condition_connecning'],touch.ud['finish_condition_connecning'], self.bizie_line):
+                if self.watcher.add_link_in_storage(touch.ud['start_condition_connecning'],touch.ud['finish_condition_connecning'], self.bizie_line):
                     x,y = self.mouse_on_condition.get_position_connector(self.active_connector)
-                    self.bizie_line.end_create_bzezier_line(x,y)
+                    self.bizie_line.drawing_bezier_line([x+RADIUS_CONNECTOR,y+RADIUS_CONNECTOR], 'draw straight line')
                     self.bezier_line_array.append(self.bizie_line)
+                    self.bizie_line = False
                 else:
-                    self.bizie_line.remove()
+                    del self.bizie_line
             # удаление, если конец линии Безье не соединен с коннектором
             else:
-                self.bizie_line.remove()
+                del self.bizie_line
                 
         return super().on_touch_up(touch)
 
     def on_touch_move(self, touch):
-        print(touch.dx, touch.dy)
         # в случае если рисуется линия Безье
         if self.start_draw_bezie:
             # получение координат началалинии Безье  
             x, y = self.conditions[touch.ud['start_condition_connecning']].get_position_connector(touch.ud['start_connector'])
             # перерисовка линии Безье          
-            self.bizie_line.drawing_bezier_line([x+5 ,y+5, touch.x, touch.y], 'draw straight line')
-        elif self.active_bezier_line:
+            self.bizie_line.drawing_bezier_line([x+RADIUS_BEZIER_POINT,
+                                                 y+RADIUS_BEZIER_POINT, 
+                                                 touch.x, touch.y], 
+                                                 'draw straight line'
+                                                )
+        elif self.mouse_on_bezier_line:
             # изменяем позицию текущей линии bezie
-            self.bezier_line_array[self.selected_bezier_line].drawing_bezier_line([touch.x, touch.y], 'change middle point')
+            self.bezier_line_array[self.active_bezier_line].drawing_bezier_line([touch.x, touch.y], 
+                                                                                  'change middle point'
+                                                                                  )
         # перемещение элипса
         else:
             if self.mouse_on_condition:
                 self.mouse_on_condition.move_condition(touch)
-                inner, outer = watcher.get_list_of_bezie(self.mouse_on_condition.count)
-                self.move_bezie(inner, [touch.dx, touch.dy])
+                inner, outer = self.watcher.get_list_of_bezie(self.mouse_on_condition.count)
+                self.inspector.move_bezie(inner, outer, [touch.dx, touch.dy])
 
         return super().on_touch_down(touch)
-    
-    def move_bezie(self, list_of_bezie, ee):
-        for _ in list_of_bezie:
-            index = self.bezier_line_array.index(_)
-            self.bezier_line_array[index].drawing_bezier_line(ee, 'change start point')
-        
-    
+
+    def change_element(self) -> None:
+        # снятие выделения с линий Безье
+        for line in self.bezier_line_array: line.change_color(COLOR_DEFAULD)
+        # сктытие кнопки
+        self.select_law.hide()
+        # отмена вбранной линии Безье
+        self.selected_bezier_line = False
+ 
 class LaplaceApp(App):
     def build(self):
         parent = Widget()
-        self.painter = Painter()
-        parent.add_widget(self.painter)
-        parent.add_widget(Button(text = 'Добавить\n состояние', halign='center', on_press=self.add_condition, size =(100,50)))
-        parent.add_widget(Button(text = 'Удалить\n состояние', halign='center', on_press=self.del_condition, pos  = (105,0), size =(100,50)))
 
+        self.painter = Painter()
+
+        parent.add_widget(self.painter)
+
+        parent.add_widget(Button(text = 'Добавить\n состояние', halign='center', on_press=self.add_condition, size = SIZE_BTN))
+        parent.add_widget(Button(text = 'Удалить\n \элемент', halign='center', on_press=self.del_condition, pos  = (155,0), size = SIZE_BTN))
+        parent.add_widget(Button(text = 'Провести\n расчет', halign='center', on_press=self.del_condition, pos  = (310,0), size = SIZE_BTN))
         return parent
 
     def add_condition(self, instance):
         '''Добавление состояний на пайнтер'''
         self.painter.conditions.append(Condition(self.painter.canvas, [200,200], self.painter.count))
-        watcher.expand_storage()
+        self.painter.watcher.expand_storage()
         self.painter.count += 1
 
     def del_condition(self, instance):
         if self.painter.check_condition:
-            self.painter.conditions.pop(self.painter.check_condition.count)
-            watcher.reduce_storage(self.painter.check_condition.count)
-            self.painter.check_condition = None
-            self.change_lable()
-    
-    def change_lable(self):
-        self.painter.count -= 1
-        count = 0
-        if self.painter.conditions:
-            for condition in self.painter.conditions:
-                condition.change_lable_count(count)
-                count += 1
+            index = self.painter.check_condition.count
+            inner, outer = self.painter.watcher.reduce_storage(index)
+            self.painter.inspector.killer(inner, outer, index)
+            self.painter.check_condition = False
+            self.painter.count -= 1
 
 if __name__ == '__main__':
     LaplaceApp().run()

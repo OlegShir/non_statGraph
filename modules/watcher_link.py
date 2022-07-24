@@ -2,27 +2,25 @@
 #                     coloumn(in)                 #  
 # row(out)     0        1        2        3       #
 #         +--------+--------+--------+--------+   #
-#   0     |  None  | Bezier | Bezier |  None  |   #
+#   0     | False  | Bezier | Bezier | False  |   #
 #         +--------+--------+--------+--------+   #
-#   1     |  None  | Bezier |  None  | Bezier |   #
+#   1     | False  | Bezier | False  | Bezier |   #
 #         +--------+--------+--------+--------+   #
-#   2     |  None  |  None  |  None  |  None  |   #
+#   2     | False  | False  | False  | False  |   #
 #         +--------+--------+--------+--------+   #
-#   3     | Bezier |  None  |  None  |  None  |   #
+#   3     | Bezier | False  | False  | False  |   #
 #         +--------+--------+--------+--------+   #
 #                                                 #
 #   storage =[                                    #              
-#            [Non,Bezier,Bezier,None],            #
-#            [None, Bezier, None, Bezier],        #
-#            [None, None, None, None],            #
-#            [Bezier, None, None, None]           #
+#            [False, Bezier, Bezier, False],      #
+#            [False, Bezier, False, Bezier],      #
+#            [False, False, False, False],        #
+#            [Bezier, False, False, False]        #
 #            ]                                    #
 ###################################################
 
-from numpy import outer
-
-
 def _logger(func):
+    '''Логгер отслеживания состояния хранилища'''
     def wrapper(*args, **kwargs):
         rezult = func(*args, **kwargs)
         zip = '-'
@@ -37,7 +35,7 @@ class Watcher_link():
 
     @_logger
     def expand_storage(self):
-        '''Увеличение хранилища'''
+        '''Увеличение хранилища.'''
         bimbo = False
         if not self.storage:
             self.storage.append([bimbo])
@@ -49,16 +47,18 @@ class Watcher_link():
     
     @_logger   
     def reduce_storage(self, index: int):
-        '''Уменьшение хранилища'''
+        '''Уменьшение хранилища.'''
+        inner, outer = self.get_list_of_bezie(index)
         if index < self.len_storage:
             for row in self.storage:
                 row.pop(index)
             self.storage.pop(index)
         self.len_storage -= 1
+        return inner, outer
 
     @_logger
     def add_link_in_storage(self, out_condition, in_condition, link):
-        '''Добавление связи в хранилище'''
+        '''Добавление связи в хранилище.'''
         if self.storage[out_condition][in_condition] == False:
             self.storage[out_condition][in_condition] = link
             return True
@@ -67,14 +67,16 @@ class Watcher_link():
 
     @_logger
     def del_link_in_storage(self, link):
-        '''Удаление связи в хранилище'''
-        for i in self.storage:
-            for j in self.storage[i]:
+        '''Удаление связи в хранилище.'''
+        for i in range(len(self.storage)):
+            for j in range(len(self.storage[i])):
                 if self.storage[i][j] == link:
                     break
         self.storage[i][j] = False
 
     def get_list_of_bezie(self, index):
+        '''Получение списка входящих и исходящих 
+        линий Безье из состояния index.'''
         inner = []
         outer = []
         for row in self.storage:
