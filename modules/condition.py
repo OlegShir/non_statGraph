@@ -1,8 +1,6 @@
 from kivy.uix.label import Label
 from kivy.graphics import Ellipse, Color, Line
 import math
-
-from sympy import true
 from settings import *
 
 
@@ -147,11 +145,15 @@ class Condition():
     def add_connector_link(self, number_connector: int, direction: str, line_bezier) -> None:
         if direction == 'in':
             self.connector_link_in[number_connector] = line_bezier
-        else:
-            self.connector_link_out[number_connector] = line_bezier
-        
-        print(self.count, ':', self.connector_link_in, self.connector_link_out)
-    
+            return
+        self.connector_link_out[number_connector] = line_bezier
+
+    def remove_connector_link(self, number_connector: int, direction: str) -> None:
+        if direction == 'in':
+            self.connector_link_in[number_connector] = False
+            return
+        self.connector_link_out[number_connector] = False
+
     def is_connector_free(self, connector: int) -> bool and str and object:
         if self.connector_link_in[connector]:
             return False, 'in', self.connector_link_in[connector]

@@ -88,8 +88,16 @@ class Bezier_line():
             x_mid = x + ox
             y_mid = y + oy
             self.points_control = [xx+.75*ox, yy+.75*oy]
-        elif terms == 'change end bezie':
+        elif terms == 'in':
             x1, y1 = array_points
+            x0, y0, x_mid, y_mid, _, _ = self.position_bezie
+            x1 += RADIUS_CONNECTOR
+            y1 += RADIUS_CONNECTOR            
+        elif terms == 'out':
+            x0, y0 = array_points
+            _, _, x_mid, y_mid, x1, y1 = self.position_bezie
+            x0 += RADIUS_CONNECTOR
+            y0 += RADIUS_CONNECTOR
             
         self.position_bezie = [x0, y0, x_mid, y_mid, x1, y1]
         self.bezierline.points = self.position_bezie
@@ -188,7 +196,6 @@ class Bezier_line():
             self.label_bezie.text = text
 
     def save_props(self):
-        print('ok')
         self.save_props_val = [self.bezierline.points,
                                self.bezierline_conn.pos,
                                self.triangle.points,

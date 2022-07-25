@@ -99,7 +99,7 @@ class Painter(Widget):
                     # сохраняем данные об изменяемой линии Безье
                     self.start_change_bezie = change_line_bezie
                     touch.ud['from_condition'] = self.mouse_on_condition
-                    touch.ud['from_connector'] = self.mouse_on_condition.count
+                    touch.ud['from_connector'] = self.mouse_on_condition.active_connector
                     touch.ud['directon_change_line'] = direction
                     self.start_change_bezie.save_props()
                 return
@@ -182,26 +182,25 @@ class Painter(Widget):
                     self.active_connector)
                 # изменение данных в коннекторах и состояниях
                 from_condition = touch.ud['from_condition']
-                if touch.ud['directon_change_line'] == 'in':
-                    # освобождаем коннектор в прошлом состоянии
-                    from_condition.connector_link_in[touch.ud['from_connector']] = False
-                    # добавляем в новое состояние
-                    self.mouse_on_condition.add_connector_link(self.mouse_on_condition.active_connector,
-                                                               'in',
-                                                               self.start_change_bezie)
-                    self.start_change_bezie.end_create_bzezier_line(x,y)
-                else:
-                    from_condition.connector_link_out[touch.ud['from_connector']] = False
-                    self.mouse_on_condition.add_connector_link(self.mouse_on_condition.active_connector,
-                                                               'out',
-                                                               self.start_change_bezie)
-                    self.start_change_bezie.start_create_bzezier_line(x,y)
-
+                direction = touch.ud['directon_change_line']
+                # освобождаем коннектор в прошлом состоянии
+                from_condition.remove_connector_link(touch.ud['from_connector'],
+                                                     direction)
+                # добавляем в новое состояние
+                self.mouse_on_condition.add_connector_link(self.mouse_on_condition.active_connector,
+                                                           direction,
+                                                           self.start_change_bezie)
+                # корректировка конечных точек линии относительно коннекторов
+                self.start_change_bezie.drawing_bezier_line([x, y], direction)
                 # уведомлие wathcher о изменении связи
+                if from_condition != self.mouse_on_condition:
+                    self.watcher.change_element_in_storage(
+                        self.mouse_on_condition.count, self.start_change_bezie, direction)
 
             else:
                 self.start_change_bezie.load_props()
             self.start_change_bezie = False
+            # сделать очистку переменных
 
         return super().on_touch_up(touch)
 
