@@ -67,24 +67,26 @@ class Watcher_link():
         else:
             return False
 
-    def del_link_in_storage(self, link) -> int:
+    @_logger
+    def del_link_in_storage(self, link):
         '''Удаление связи в хранилище.'''
         for i in range(len(self.storage)):
             for j in range(len(self.storage[i])):
                 if self.storage[i][j] == link:
                     break
         self.storage[i][j] = False
-        return i, j
+        print(i,j)
+        return i,j
 
-    @_logger
+
     def change_element_in_storage(self, new_condition: int, link, direction: str) -> None:
         '''Изменение связи в хранилище.'''
         i, j = self.del_link_in_storage(link)
         if direction == 'in':
-            in_condition = j
+            in_condition = i
             out_condition = new_condition
         else:
-            out_condition = i
+            out_condition = j
             in_condition = new_condition
         self.add_link_in_storage(out_condition, in_condition, link)
 
