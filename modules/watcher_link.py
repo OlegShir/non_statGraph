@@ -70,24 +70,27 @@ class Watcher_link():
     @_logger
     def del_link_in_storage(self, link):
         '''Удаление связи в хранилище.'''
-        for i in range(len(self.storage)):
-            for j in range(len(self.storage[i])):
-                if self.storage[i][j] == link:
-                    break
-        self.storage[i][j] = False
-        print(i,j)
-        return i,j
+        def index_storage():
+            for i in range(len(self.storage)):
+                for j in range(len(self.storage[i])):
+                    yield i, j
 
+        for i, j in index_storage():
+            if self.storage[i][j] == link:
+                break
+        self.storage[i][j] = False
+        return i, j
 
     def change_element_in_storage(self, new_condition: int, link, direction: str) -> None:
         '''Изменение связи в хранилище.'''
         i, j = self.del_link_in_storage(link)
         if direction == 'in':
-            in_condition = i
-            out_condition = new_condition
-        else:
-            out_condition = j
             in_condition = new_condition
+            out_condition = i
+            print('in', out_condition, in_condition)
+        else:
+            in_condition = j
+            out_condition = new_condition
         self.add_link_in_storage(out_condition, in_condition, link)
 
     def get_list_of_bezie(self, index):

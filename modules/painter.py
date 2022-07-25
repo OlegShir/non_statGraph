@@ -97,8 +97,7 @@ class Painter(Widget):
                     self.bizie_line.start_create_bezier_line()
                 else:
                     # сохраняем данные об изменяемой линии Безье
-                    index = self.bezier_line_array.index(change_line_bezie)
-                    self.start_change_bezie = self.bezier_line_array[index]
+                    self.start_change_bezie = change_line_bezie
                     touch.ud['from_condition'] = self.mouse_on_condition
                     touch.ud['from_connector'] = self.mouse_on_condition.active_connector
                     touch.ud['directon_change_line'] = direction
@@ -195,14 +194,13 @@ class Painter(Widget):
                 self.start_change_bezie.drawing_bezier_line([x, y], direction)
                 # уведомлие wathcher о изменении связи
                 if from_condition != self.mouse_on_condition:
-              
-     
-                    self.watcher.del_link_in_storage(self.start_change_bezie)
-
+                    self.watcher.change_element_in_storage(self.mouse_on_condition.count,
+                                                           self.start_change_bezie,
+                                                           direction)
             else:
                 self.start_change_bezie.load_props()
         self.start_change_bezie = False
-            # сделать очистку переменных
+        # сделать очистку переменных
 
         return super().on_touch_up(touch)
 
