@@ -67,17 +67,21 @@ class Watcher_link():
         else:
             return False
 
-    @_logger
-    def del_link_in_storage(self, link):
-        '''Удаление связи в хранилище.'''
+    def get_conditions_index(self, link):
+        '''Получение индексов состояний соединенной линий Безье (link).'''
         def index_storage():
             for i in range(len(self.storage)):
                 for j in range(len(self.storage[i])):
                     yield i, j
-
         for i, j in index_storage():
             if self.storage[i][j] == link:
                 break
+        return i, j
+
+    @_logger
+    def del_link_in_storage(self, link):
+        '''Удаление связи в хранилище.'''
+        i, j = self.get_conditions_index(link)
         self.storage[i][j] = False
         return i, j
 

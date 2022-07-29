@@ -81,7 +81,7 @@ class Painter(Widget):
                     self.active_bezier_line = False
 
     def on_touch_down(self, touch):
-        if touch.y > 60:
+        if touch.y > SIZE_BTN[1]:
             # блокировка при соединении состояний
             if self.mouse_on_connector:
                 # распаковка данных о коннекторе
@@ -139,7 +139,7 @@ class Painter(Widget):
                     self.control_btn.show_law_btn(
                         self.selected_bezier_line.law_param)
                     return
-                if self.selected_bezier_line and not self.cross_zone(touch) and not self.mouse_on_bezier_line:
+                if self.selected_bezier_line and not self.mouse_on_bezier_line:
                     self.selected_bezier_line.set_value_label(
                         self.control_btn.get_law_param())
                     self.change_element()
@@ -218,7 +218,18 @@ class Painter(Widget):
             # получение координат началалинии Безье
             x, y = self.conditions[touch.ud['start_condition']].get_position_connector(
                 touch.ud['start_connector'])
-            # перерисовка линии Безье
+            # перерисовка линии Безье при петле
+            if self.mouse_on_condition and touch.ud['start_condition'] == self.mouse_on_condition.count:
+                print ('e')
+                self.bizie_line.drawing_bezier_line([x+RADIUS_BEZIER_POINT,
+                                                    y+RADIUS_BEZIER_POINT,
+                                                    self.mouse_on_condition.condition_position[0],
+                                                    self.mouse_on_condition.condition_position[1],
+                                                    touch.x, touch.y],
+                                                    'loop'
+                                                    )
+                return
+            # перерисовка прямой линии Безье
             self.bizie_line.drawing_bezier_line([x+RADIUS_BEZIER_POINT,
                                                  y+RADIUS_BEZIER_POINT,
                                                  touch.x, touch.y],
@@ -251,15 +262,6 @@ class Painter(Widget):
         # отмена вбранной линии Безье
         self.selected_bezier_line = False
 
-    def delete_bezie_line(self):
-        # удаляем связь из хранилища
-        self.watcher.del_link_in_storage(self.selected_bezier_line)
-        # получаем индекс выбранной линии Безье в общем списке
-        index = self.bezier_line_array.index(self.selected_bezier_line)
-        # удаляем линию из списка, при этом эта последняя ссылка на линию и вызывается м. метод __del__
-        self.bezier_line_array.pop(index)
-        self.change_element()
-
     def cross_cursor(self, witget_position: tuple, touch_position: tuple, radius: int, dopusk: int = 0) -> bool:
         '''Определяет пересечение курсорва мыши с виджетом (элипсом).
 
@@ -268,23 +270,6 @@ class Painter(Widget):
         x0, y0 = witget_position
         x1, y1 = touch_position
         if math.sqrt((x1-x0-radius)**2+(y1-y0-radius)**2) <= radius + dopusk:
-            return True
-        else:
-            return False
-
-    def cross_zone(self, touch_position: tuple) -> bool:
-        '''Определяет пересечение курсорва мыши с зоной выбора закона.'''
-        # распаковка начальных координат кнопки
-        x0 = POSITION_SELECT_LAW_BTN[0]
-        y1 = POSITION_SELECT_LAW_BTN[1]+SIZE_BTN[0]
-        # получение начальных координат кнопки
-        x1 = x0 + SIZE_BTN[0]
-        y0 = y1 - SIZE_BTN[0] - 3*PADDING_VERTICAL
-        # распаковка координат курсора
-        x = touch_position.x
-        y = touch_position.y
-        # проверка условия
-        if x >= x0 and x <= x1 and y >= y0 and y <= y1:
             return True
         else:
             return False

@@ -8,8 +8,10 @@ from modules.painter import Painter
 from settings import *
 import re
 
+
 class SuperButton(Button):
     '''Новый класс необходим для добавления нового свойства'''
+
     def __init__(self, key_law, **kwarg):
         super(SuperButton, self).__init__(**kwarg)
         self.key_law = key_law
@@ -22,7 +24,6 @@ class ControlButtons(Widget):
         self.dropdown = DropDown()
         self.dropdown.bind(on_select=self.on_select_dropdown)
         # создание свойств кнопки выбора закона
-        self.position_law_btn = POSITION_SELECT_LAW_BTN
         self.disabled_law_btn = True
         self.key_law_btn: str = ''
         self.text_law_btn = 'Выберите закон\nраспределения'
@@ -51,7 +52,7 @@ class ControlButtons(Widget):
         self.calculate_btn = Button(text='Провести\nрасчет',
                                     halign='center',
                                     on_press=self.calculate,
-                                    pos=(310, 0),
+                                    pos=(650, 0),
                                     size=SIZE_BTN
                                     )
         # создание списка кнопок для выпадающего списка
@@ -64,7 +65,7 @@ class ControlButtons(Widget):
         # создание основной кнопи для выпадающего списка
         self.law_btn = Button(text=self.text_law_btn,
                               halign='center',
-                              pos=self.position_law_btn,
+                              pos=(310, 0),
                               size=SIZE_BTN,
                               disabled=True)
         self.law_btn.bind(on_release=self.dropdown.open)
@@ -85,13 +86,23 @@ class ControlButtons(Widget):
         if self.painter.check_condition:
             index = self.painter.check_condition.count
             inner, outer = self.painter.watcher.reduce_storage(index)
-            self.painter.inspector.killer(inner, outer, index)
+            self.painter.inspector.killer_conditions(inner, outer, index)
             self.painter.check_condition = False
             self.painter.count -= 1
         if self.painter.selected_bezier_line:
-            self.painter.delete_bezie_line()
-
-
+            connected_conditions = self.painter.watcher.get_conditions_index(
+                self.painter.selected_bezier_line)
+            self.painter.inspector.killer_bezier_line(
+                connected_conditions, self.painter.selected_bezier_line)
+            # удаляем связь из хранилища
+            self.painter.watcher.del_link_in_storage(
+                self.painter.selected_bezier_line)
+            # получаем индекс выбранной линии Безье в общем списке
+            index = self.painter.bezier_line_array.index(
+                self.painter.selected_bezier_line)
+            # удаляем линию из списка, при этом эта последняя ссылка на линию и вызывается м. метод __del__
+            self.painter.bezier_line_array.pop(index)
+            self.painter.change_element()
 
     def calculate(self, instance):
         print('calculate')
@@ -117,13 +128,13 @@ class ControlButtons(Widget):
                                                       text_size=(90, None),
                                                       font_size=FONT_SIZE_LAW_PARAM,
                                                       halign='left',
-                                                      pos=(self.position_law_btn[0]+10,
-                                                           self.position_law_btn[1]-2*PADDING_VERTICAL-count*PADDING_VERTICAL),
+                                                      pos=(465,
+                                                           -count*PADDING_VERTICAL),
                                                       color=COLOR_TEXT
                                                       )
                                                 )
             edit_text = '' if not values else values[count]
-            textinput: TextInput = FloatInput([self.position_law_btn[0]+35, self.position_law_btn[1]-PADDING_VERTICAL-count*PADDING_VERTICAL],
+            textinput: TextInput = FloatInput([500, 35-count*PADDING_VERTICAL],
                                               text=edit_text)
             self.input_image_law_btn.append(textinput)
             self.painter.add_widget(textinput)

@@ -12,13 +12,21 @@ class Inspector():
             index = self.bezier_line_array.index(_)
             self.bezier_line_array[index].drawing_bezier_line(touch, 'change finish point')
     
-    def killer(self, inner_list_of_bezie, outer_list_of_bezie, count):
+    def killer_conditions(self, inner_list_of_bezie, outer_list_of_bezie, count):
         union_array = inner_list_of_bezie + outer_list_of_bezie
-        for _ in union_array:
-            index = self.bezier_line_array.index(_)
-            self.bezier_line_array.pop(index)
+        try:
+            for _ in union_array:
+                index = self.bezier_line_array.index(_)
+                self.bezier_line_array.pop(index)
+        except:
+            pass
         self.conditions.pop(count)
         self.change_lable()
+
+    def killer_bezier_line(self, array, link):
+        for i in array:
+            self.conditions[i].remove_bezie_line(link)
+
 
     def change_lable(self):
         count = 0

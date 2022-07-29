@@ -161,6 +161,14 @@ class Condition():
             return False, 'out', self.connector_link_out[connector]
         return True, '', None
 
+    def remove_bezie_line(self, link):
+        for i in range(len(self.connector_link_in)):
+            if self.connector_link_in[i] == link:
+                 self.connector_link_in[i] = False
+        for i in range(len(self.connector_link_out)):
+            if self.connector_link_out[i] == link:
+                 self.connector_link_out[i] = False
+
     def __del__(self):
         self.hide_connectors()
         self.hide_lighter()
