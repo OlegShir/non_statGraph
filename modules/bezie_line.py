@@ -42,6 +42,9 @@ class Bezier_line():
         self.drawing_bezier_line(
             [start_x+RADIUS_CONNECTOR, start_y+RADIUS_CONNECTOR, x1, y1], 'draw straight line')
 
+    def create_loop_bzezier_line(self, ):
+        pass
+
     def drawing_bezier_line(self, array_points: list, terms):
         # в случае если ресуется прямая лния
         if terms == 'draw straight line':
@@ -92,13 +95,27 @@ class Bezier_line():
             x1, y1 = array_points
             x0, y0, x_mid, y_mid, _, _ = self.position_bezie
             x1 += RADIUS_CONNECTOR
-            y1 += RADIUS_CONNECTOR            
+            y1 += RADIUS_CONNECTOR
         elif terms == 'out':
             x0, y0 = array_points
             _, _, x_mid, y_mid, x1, y1 = self.position_bezie
             x0 += RADIUS_CONNECTOR
             y0 += RADIUS_CONNECTOR
-            
+        elif terms == 'loop':
+            x0, y0, relative_center_x, relative_center_y, touch_x, touch_y = array_points
+            # относительный центр состояния
+            xc = relative_center_x + RADIUS_CONDITION
+            yc = relative_center_y + RADIUS_CONDITION
+            # определение ормированного углового коэффициента между центром состояния и курсором
+            angel = self.angle_coefficient2(xc, yc, touch_x, touch_y)
+            # перевод в полярную сстему координат
+            x1 = RADIUS_CONDITION*math.cos(angel)+xc
+            y1 = RADIUS_CONDITION*math.sin(angel)+yc
+            # создание петли
+            x_mid, y_mid = self.create_loop(x0,y0, x1,y1,angel)
+            self.points_control = [
+                x_mid-RADIUS_BEZIER_POINT, y_mid-RADIUS_BEZIER_POINT]
+
         self.position_bezie = [x0, y0, x_mid, y_mid, x1, y1]
         self.bezierline.points = self.position_bezie
         self.bezierline_conn.pos = self.points_control
@@ -151,12 +168,53 @@ class Bezier_line():
             return 0
         return math.atan((y1-y0)/(x1-x0))+c
 
-    def turn_point_to_angle(self, x, y, x_centr, y_center, angle_rad):
+
+    def angle_coefficient2(self, x0, y0, x1, y1):
+        '''Определения нормированного углового коэффициента отрезка
+           для полярной сстемы координат.'''
+        if x1 >= x0:
+            if x1 == x0 and y1 >= y0:
+                return math.pi/2
+            if x1 == x0 and y1 <= y0:
+                return 3*math.pi/2
+            if y1 > y0:
+                angel = math.atan((y0-y1)/(x0-x1))
+            else:
+                angel = 2*math.pi + math.atan((y0-y1)/(x0-x1))
+        else:
+            if x1 == x0:
+                return 2*math.pi
+            if y1 <= y0:
+                angel = math.pi + math.atan((y1-y0)/(x1-x0))
+            else:
+                angel = math.pi + math.atan((y0-y1)/(x0-x1))
+
+        return angel
+
+    def create_loop(self, x0,y0,x1,y1, angel):
+        # длина отрезка
+        d = math.sqrt((x1-x0)**2+(y1-y0)**2)
+        x_half = (x1+x0)/2
+        y_half = (y1+y0)/2
+        dop_angel = math.pi/4
+        if (x1<x0 and y1>y0) or (x1<x0 and y1<y0) or (x1<x0 and y1>y0)       # увкличение дуги
+        x_mid = 2*d*math.cos(angel+dop_angel)+x_half
+        y_mid = 2*d*math.sin(angel+dop_angel)+y_half
+        print(angel,'--------------', dop_angel)
+     
+        
+        
+
+
+        
+        return x_mid, y_mid
+
+    def turn_point_to_angle(self, x, y, x_centr, y_center, angle_rad, c = 1):
         '''Поворот точки на требуемый угол относительно выбранного угла.'''
         new_x = (x - x_centr) * math.cos(angle_rad) - \
-            (y - y_center) * math.sin(angle_rad) + x_centr
-        new_y = (x - x_centr) * math.sin(angle_rad) + \
-            (y - y_center) * math.cos(angle_rad) + y_center
+            (y - y_center) * math.sin(angle_rad) + x_centr*c
+        new_y = c*(x - x_centr) * math.sin(angle_rad) + \
+            (y - y_center) * math.cos(angle_rad) + y_center*c
 
         return new_x, new_y
 
@@ -207,14 +265,14 @@ class Bezier_line():
 
     def load_props(self):
         if self.save_props_val:
-            self.bezierline.points = self.save_props_val[0] 
+            self.bezierline.points = self.save_props_val[0]
             self.bezierline_conn.pos = self.save_props_val[1]
             self.triangle.points = self.save_props_val[2]
             self.label_bezie.pos = self.save_props_val[3]
             self.position_bezie = self.save_props_val[4]
             self.points_control = self.save_props_val[5]
             self.points_triangle = self.save_props_val[6]
-    
+
     def remove(self):
         self.canvas.remove(self.bezierline)
         self.canvas.remove(self.triangle)
