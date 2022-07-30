@@ -7,22 +7,21 @@ from settings import *
 class Bezier_line():
     def __init__(self, canvas) -> None:
         self.canvas = canvas
-        self.size_radius_ellips = (RADIUS_BEZIER_POINT, RADIUS_BEZIER_POINT)
-        self.size_arrow = SIZE_ARROW
-
-        self.position_bezie = []
-        self.points_control = []
-        self.points_triangle = []
-
-        self.bezierline = None
-        self.triangle = None
-        self.bezierline_conn = None
-
+        self.size_radius_ellips: tuple = (
+            RADIUS_BEZIER_POINT, RADIUS_BEZIER_POINT)
+        self.size_arrow: int = SIZE_ARROW
+        self.position_bezie: list = []
+        self.points_control: list = []
+        self.points_triangle: list = []
+        self.bezierline: Bezier = None
+        self.triangle: Triangle = None
+        self.bezierline_conn: Ellipse = None
         self.law_param: list or bool = False
         # создание контейнера для хранения надписей законов распределения
-        self.label_bezie = self.create_label()
+        self.label_bezie: Label = self.create_label()
+        self.is_loop: bool = False
 
-    def start_create_bezier_line(self):
+    def start_create_bezier_line(self) -> None:
         # принажатии на коннектор создаются экземпляры
         with self.canvas:
             Color(rgb=COLOR_DEFAULD)
@@ -30,7 +29,7 @@ class Bezier_line():
             self.triangle = Triangle(points=[0, 0, 0, 0, 0, 0])
             self.bezierline_conn = Ellipse(size=self.size_radius_ellips)
 
-    def end_create_bzezier_line(self, end_x, end_y):
+    def end_create_bzezier_line(self, end_x, end_y) -> None:
         """Метод необходим для корректировки конца линии Бизье"""
         x0, y0, _, _, _, _ = self.position_bezie
         self.drawing_bezier_line(
@@ -45,7 +44,7 @@ class Bezier_line():
     def create_loop_bzezier_line(self, ):
         pass
 
-    def drawing_bezier_line(self, array_points: list, terms):
+    def drawing_bezier_line(self, array_points: list, terms: str) -> list:
         # в случае если ресуется прямая лния
         if terms == 'draw straight line':
             if len(array_points) == 2:
@@ -112,9 +111,9 @@ class Bezier_line():
             x1 = RADIUS_CONDITION*math.cos(angel)+xc
             y1 = RADIUS_CONDITION*math.sin(angel)+yc
             # создание петли
-            x_mid, y_mid = self.create_loop(x0,y0, x1,y1,angel)
+            x_mid, y_mid, xx, yy = self.create_loop(x0, y0, x1, y1, angel)
             self.points_control = [
-                x_mid-RADIUS_BEZIER_POINT, y_mid-RADIUS_BEZIER_POINT]
+                xx-RADIUS_BEZIER_POINT, yy-RADIUS_BEZIER_POINT]
 
         self.position_bezie = [x0, y0, x_mid, y_mid, x1, y1]
         self.bezierline.points = self.position_bezie
@@ -168,7 +167,6 @@ class Bezier_line():
             return 0
         return math.atan((y1-y0)/(x1-x0))+c
 
-
     def angle_coefficient2(self, x0, y0, x1, y1):
         '''Определения нормированного углового коэффициента отрезка
            для полярной сстемы координат.'''
@@ -191,25 +189,33 @@ class Bezier_line():
 
         return angel
 
-    def create_loop(self, x0,y0,x1,y1, angel):
+    def create_loop(self, x0, y0, x1, y1, angel):
         # длина отрезка
         d = math.sqrt((x1-x0)**2+(y1-y0)**2)
         x_half = (x1+x0)/2
         y_half = (y1+y0)/2
         dop_angel = math.pi/4
-        if (x1<x0 and y1>y0) or (x1<x0 and y1<y0) or (x1<x0 and y1>y0)       # увкличение дуги
+        if (x0 < x1 and y0 > y1) or (x1 < x0 and y0 < y1) or (x0 < x1 and y0 < y1) or (x0 < x1 and y0 > y1):
+            dop_angel = -math.pi/4
+        # увкличение дуги
         x_mid = 2*d*math.cos(angel+dop_angel)+x_half
         y_mid = 2*d*math.sin(angel+dop_angel)+y_half
-        print(angel,'--------------', dop_angel)
-     
-        
-        
-
-
-        
+               
         return x_mid, y_mid
 
-    def turn_point_to_angle(self, x, y, x_centr, y_center, angle_rad, c = 1):
+    def get_coord_point_control(self, x0, y0, x_mid, y_mid, x1, y1) -> float:
+        '''Метод возвращает координаты точки контроля для линии Безье 
+           в соответствии с уравнением квадратичной кривой для t = 1/2.
+                       2                  2
+           B(t) = (1-t) P0 + 2t(1-t)P1 + t P2'''
+        
+        x_point_control = (0.5)**2*x0+0.5*x_mid+0.5**2*x1
+        y_point_control = (0.5)**2*y0+0.5*y_mid+0.5**2*y1
+
+        return x_point_control, y_point_control
+    
+
+    def turn_point_to_angle(self, x, y, x_centr, y_center, angle_rad, c=1):
         '''Поворот точки на требуемый угол относительно выбранного угла.'''
         new_x = (x - x_centr) * math.cos(angle_rad) - \
             (y - y_center) * math.sin(angle_rad) + x_centr*c
