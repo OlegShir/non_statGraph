@@ -78,6 +78,21 @@ class Watcher_link():
                 break
         return i, j
 
+    def get_ful_conditions_index(self, links: list) -> set:
+        '''Получение всех индексов состояний соединенных линиями Безье (links).'''
+        indexs_conditions:list = []
+        for link in links:
+            print(link)
+            for i in range(len(self.storage)):
+                for j in range(len(self.storage[i])):
+                    if self.storage[i][j] == link:
+                        indexs_conditions.extend([i,j])
+            print(indexs_conditions)
+        indexs_conditions = set(indexs_conditions)
+        print(indexs_conditions)
+
+        return indexs_conditions
+
     @_logger
     def del_link_in_storage(self, link):
         '''Удаление связи в хранилище.'''
@@ -97,7 +112,7 @@ class Watcher_link():
             out_condition = new_condition
         self.add_link_in_storage(out_condition, in_condition, link)
 
-    def get_list_of_bezie(self, index):
+    def get_list_of_bezie(self, index: int):
         '''Получение списка входящих и исходящих 
         линий Безье из состояния index.'''
         inner = []

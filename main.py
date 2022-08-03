@@ -1,9 +1,11 @@
 from kivy.app import App
-from modules.control_buttons import ControlButtons
+from src.control_buttons import ControlButtons
 
 
 class LaplaceApp(App):
     def build(self):
+        self.icon = 'img\src\Logo.png'
+        self.title = 'non-statGraph'
         return ControlButtons()
 
 

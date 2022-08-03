@@ -1,10 +1,11 @@
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from requests import delete
-from modules.bezie_line import Bezier_line
-from modules.condition import Condition
-from modules.watcher_link import Watcher_link
-from modules.inspector import Inspector
+from src.bezie_line import Bezier_line
+from src.condition import Condition
+from src.watcher_link import Watcher_link
+from src.inspector import Inspector
+from src.message_to_user import MessageToUser
 from settings import *
 import math
 
@@ -14,30 +15,38 @@ class Painter(Widget):
     def __init__(self, control_btn, **kwargs):
         super(Painter, self).__init__(**kwargs)
         # счетчик количества состояний
-        self.control_btn = control_btn
-        self.count = 0
-
-        self.conditions = []
+        self.control_btn: object = control_btn
+        self.count: int = 0
+        self.conditions: list = []
         self.mouse_on_condition: bool or Condition = False
         self.check_condition: bool or Condition = False
 
         self.active_connector = False
-        self.mouse_on_connector = False
+        self.mouse_on_connector: bool = False
 
         self.bizie_line = False
-        self.bezier_line_array = []
-        self.start_draw_bezie = False
-        self.mouse_on_bezier_line = False
+        self.bezier_line_array: list = []
+        self.start_draw_bezie: bool = False
+        self.mouse_on_bezier_line: bool = False
         self.active_bezier_line = False
         self.selected_bezier_line = False
 
         self.start_change_bezie = False
 
-        self.inspector = Inspector(self.conditions, self.bezier_line_array)
+        self.inspector: Inspector = Inspector(
+            self.conditions, self.bezier_line_array)
         # добавление наблюдателя
-        self.watcher = Watcher_link()
+        self.watcher: Watcher_link = Watcher_link()
         # отслеживание курсора мышки
         Window.bind(mouse_pos=self.on_motion)
+        # отслеживание изменения размера окна
+        Window.bind(on_resize=self.on_resize)
+        Window.clearcolor = COLOR_BGR
+        self.message = MessageToUser(self.canvas, Window.size[1])
+
+    def on_resize(self, window, width, height):
+        '''Метод, который запускается при изменении размера окна'''
+        self.message.change_pos_label(height)
 
     def on_motion(self, window, touch):
         """Метод отслеживания перемещения мышки по рабочей области."""
@@ -81,28 +90,33 @@ class Painter(Widget):
                     self.active_bezier_line = False
 
     def on_touch_down(self, touch):
+        self.message.hide_message()
         if touch.y > SIZE_BTN[1]:
             # блокировка при соединении состояний
             if self.mouse_on_connector:
-                # распаковка данных о коннекторе
-                is_free, direction, change_line_bezie = self.mouse_on_condition.is_connector_free(
-                    self.mouse_on_condition.active_connector)
-                if is_free:
-                    # сохранения номер состояния и коннектор
-                    touch.ud['start_condition'] = self.mouse_on_condition.count
-                    touch.ud['start_connector'] = self.mouse_on_condition.active_connector
-                    # начало отрисовки линии Безье
-                    self.start_draw_bezie = True
-                    self.bizie_line = Bezier_line(self.canvas)
-                    self.bizie_line.start_create_bezier_line()
-                else:
-                    # сохраняем данные об изменяемой линии Безье
-                    self.start_change_bezie = change_line_bezie
-                    touch.ud['from_condition'] = self.mouse_on_condition
-                    touch.ud['from_connector'] = self.mouse_on_condition.active_connector
-                    touch.ud['directon_change_line'] = direction
-                    self.start_change_bezie.save_props()
-                return
+                # try используется для защиты от тачпада
+                try:
+                    # распаковка данных о коннекторе
+                    is_free, direction, change_line_bezie = self.mouse_on_condition.is_connector_free(
+                        self.mouse_on_condition.active_connector)
+                    if is_free:
+                        # сохранения номер состояния и коннектор
+                        touch.ud['start_condition'] = self.mouse_on_condition.count
+                        touch.ud['start_connector'] = self.mouse_on_condition.active_connector
+                        # начало отрисовки линии Безье
+                        self.start_draw_bezie = True
+                        self.bizie_line = Bezier_line(self.canvas)
+                        self.bizie_line.start_create_bezier_line()
+                    else:
+                        # сохраняем данные об изменяемой линии Безье
+                        self.start_change_bezie = change_line_bezie
+                        touch.ud['from_condition'] = self.mouse_on_condition
+                        touch.ud['from_connector'] = self.mouse_on_condition.active_connector
+                        touch.ud['directon_change_line'] = direction
+                        self.start_change_bezie.save_props()
+                    return
+                except:
+                    pass
             # выделение состояния
             if self.mouse_on_condition and self.mouse_on_condition != self.check_condition:
                 self.change_element()
@@ -156,14 +170,17 @@ class Painter(Widget):
                 # сохранение номера элипса  и коннектора с которым производится соединение
                 touch.ud['finish_condition'] = self.mouse_on_condition.count
                 touch.ud['finish_connector'] = self.mouse_on_condition.active_connector
-                # остановка рисования лини Безье
+                # если линия Безье является петлей - производится запись в свойство объекта
+                if touch.ud['finish_condition'] == touch.ud['start_condition']:
+                    self.bizie_line.is_loop = True
                 if self.watcher.add_link_in_storage(touch.ud['start_condition'],
                                                     touch.ud['finish_condition'],
                                                     self.bizie_line):
                     x, y = self.mouse_on_condition.get_position_connector(
                         self.active_connector)
+                    terms = 'draw straight line' if not self.bizie_line.is_loop else 'finish_loop'
                     self.bizie_line.drawing_bezier_line(
-                        [x+RADIUS_CONNECTOR, y+RADIUS_CONNECTOR], 'draw straight line')
+                        [x+RADIUS_CONNECTOR, y+RADIUS_CONNECTOR], terms)
                     self.bezier_line_array.append(self.bizie_line)
                     # запись в состояния входящих и выходящих линий безье
                     self.conditions[touch.ud['start_condition']].add_connector_link(touch.ud['start_connector'],
@@ -201,7 +218,6 @@ class Painter(Widget):
                 self.start_change_bezie.load_props()
         self.start_change_bezie = False
         # сделать очистку переменных
-
         return super().on_touch_up(touch)
 
     def on_touch_move(self, touch) -> None:
@@ -220,7 +236,6 @@ class Painter(Widget):
                 touch.ud['start_connector'])
             # перерисовка линии Безье при петле
             if self.mouse_on_condition and touch.ud['start_condition'] == self.mouse_on_condition.count:
-                print ('e')
                 self.bizie_line.drawing_bezier_line([x+RADIUS_BEZIER_POINT,
                                                     y+RADIUS_BEZIER_POINT,
                                                     self.mouse_on_condition.condition_position[0],

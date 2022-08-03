@@ -3,8 +3,9 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
-from modules.condition import Condition
-from modules.painter import Painter
+from src.condition import Condition
+from src.painter import Painter
+from kivy.core.window import Window
 from settings import *
 import re
 
@@ -21,21 +22,21 @@ class ControlButtons(Widget):
     def __init__(self, **kwargs):
         super(ControlButtons, self).__init__(**kwargs)
         # создание выпадающего списка
-        self.dropdown = DropDown()
+        self.dropdown: DropDown = DropDown()
         self.dropdown.bind(on_select=self.on_select_dropdown)
         # создание свойств кнопки выбора закона
-        self.disabled_law_btn = True
+        self.disabled_law_btn: bool = True
         self.key_law_btn: str = ''
-        self.text_law_btn = 'Выберите закон\nраспределения'
-        self.label_image_law_btn = []
-        self.input_image_law_btn = []
+        self.text_law_btn: str = 'Выберите закон\nраспределения'
+        self.label_image_law_btn: list = []
+        self.input_image_law_btn: list = []
         # отрисовка всех кнопок
         self.build()
         # отрисовка пейнтора с передачей ему связи с текущим класом для изменения свойств кнопок
-        self.painter = Painter(self)
+        self.painter = Painter(self, size=Window.size, pos=[0, SIZE_BTN[1]])
         self.add_widget(self.painter)
 
-    def build(self):
+    def build(self) -> None:
         '''Метод отрисовки всех кнопок'''
         self.add_condition_btn = Button(text='Добавить\nсостояние',
                                         halign='center',
@@ -55,6 +56,13 @@ class ControlButtons(Widget):
                                     pos=(650, 0),
                                     size=SIZE_BTN
                                     )
+
+        self.export_png_btn = Button(text='Экспортировать\nграф',
+                                     halign='center',
+                                     on_press=self.export,
+                                     pos=(650, 70),
+                                     size=SIZE_BTN
+                                     )
         # создание списка кнопок для выпадающего списка
         for key, value in LAW_FULL_NAME.items():
             _btn = SuperButton(text=value, halign='center',
@@ -74,17 +82,19 @@ class ControlButtons(Widget):
         self.add_widget(self.add_condition_btn)
         self.add_widget(self.del_element_btn)
         self.add_widget(self.calculate_btn)
+        self.add_widget(self.export_png_btn)
 
-    def add_condition(self, instance):
+    def add_condition(self, instance) -> None:
         '''Добавление состояний на пайнтер'''
         self.painter.conditions.append(
             Condition(self.painter.canvas, [200, 200], self.painter.count))
         self.painter.watcher.expand_storage()
         self.painter.count += 1
 
-    def del_element(self, instance):
+    def del_element(self, instance) -> None:
         if self.painter.check_condition:
             index = self.painter.check_condition.count
+            # получение линий Безье соединенных с состояним из хранилища
             inner, outer = self.painter.watcher.reduce_storage(index)
             self.painter.inspector.killer_conditions(inner, outer, index)
             self.painter.check_condition = False
@@ -104,18 +114,28 @@ class ControlButtons(Widget):
             self.painter.bezier_line_array.pop(index)
             self.painter.change_element()
 
-    def calculate(self, instance):
-        print('calculate')
+    def calculate(self, instance) -> None:
+        # проверка, что для всех линий Безье введены законы
+        result = True
+        for line in self.painter.bezier_line_array:
+            result = result and line.is_full_law_param
+        if result:
+            self.painter.message.show_message('GO')
+            return
+        self.painter.message.show_message('FUCK')
+
+    def export(self, instance) -> None:
+        self.painter.export_to_png('test.png')
 
     def on_select_dropdown(self, instance, x) -> None:
-        "Метод изменения названия кнопки при выборе"
+        '''Метод изменения названия кнопки при выборе'''
         setattr(self.law_btn, 'text', x[0])
         # сохранение для дальнейшей передачи
         self.key_law_btn = x[1]
         self.paint_law_param(self.key_law_btn)
 
     def paint_law_param(self, key: str, values: list = []) -> None:
-        "Метод отрисовки параметров закона распределения при его изменении"
+        '''Метод отрисовки параметров закона распределения при его изменении'''
         # очистка из канваса изображения Лайбла и Импута закона распределения
         self.remove_law_btn()
         # для каждого закона отрисовывается ярлык и Импут в соответствии с его параметром
@@ -155,7 +175,7 @@ class ControlButtons(Widget):
         return array
 
     def show_law_btn(self, array: list) -> None:
-        '''Метод разблокировки кнопки выбора закона'''
+        '''Метод разблокировки кнопки выбора закона.'''
         self.law_btn.disabled = False
         # если для линии Безье уже вводились параметры
         if array:
@@ -163,13 +183,14 @@ class ControlButtons(Widget):
             self.law_btn.text = LAW_FULL_NAME.get(key)
             self.paint_law_param(key, values=param)
 
-    def hide_law_btn(self):
+    def hide_law_btn(self) -> None:
+        '''Метод возвращает свойства кнопки выбора закона распределения в исходное состояние.'''
         self.remove_law_btn()
         self.law_btn.text = self.text_law_btn
         self.law_btn.disabled = True
 
-    def remove_law_btn(self):
-        "Метод очистки из канваса изображения Лайбла и Импута закона распределения"
+    def remove_law_btn(self) -> None:
+        '''Метод очистки из канваса изображения Лайбла и Импута закона распределения.'''
         if self.label_image_law_btn:
             for _number_input, _label in enumerate(self.label_image_law_btn):
                 self.painter.canvas.remove(_label.canvas)
@@ -189,7 +210,7 @@ class FloatInput(TextInput):
         self.height = FONT_SIZE_LAW_PARAM/0.7
         self.pat = re.compile('[^0-9]')
 
-    def insert_text(self, substring, from_undo=False):
+    def insert_text(self, substring, from_undo: bool = False):
         '''Метод фильтрации вводимых значений'''
         pat = self.pat
         if '.' in self.text:

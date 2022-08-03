@@ -14,16 +14,18 @@ class Inspector():
     
     def killer_conditions(self, inner_list_of_bezie, outer_list_of_bezie, count):
         union_array = inner_list_of_bezie + outer_list_of_bezie
-        try:
-            for _ in union_array:
+        for _ in union_array:
+            try:
                 index = self.bezier_line_array.index(_)
                 self.bezier_line_array.pop(index)
-        except:
-            pass
+            except: pass
+            for condition in self.conditions:
+                condition.remove_bezie_line(_)
+        # очистка в состояниях подключенных линий Безье
         self.conditions.pop(count)
         self.change_lable()
 
-    def killer_bezier_line(self, array, link):
+    def killer_bezier_line(self, array: list, link):
         for i in array:
             self.conditions[i].remove_bezie_line(link)
 
