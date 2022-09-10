@@ -258,21 +258,21 @@ class Bezier_line():
         '''Метод перерисовывает бирку с законом распределения для линии Безье.'''
         # проверка правильности получаемых даннных
         if array:
-            # сохраняем параметры закона в классе
-            self.law_param = array
-            # далее производится форматирование текста для бирки
-            key, param = array
-            symbols = LAW_SYMBOLS.get(key)
-            param_symbols = LAW_PARAM.get(key)
-            text = f'{symbols}\n'
-            for i in range(len(param_symbols)):
-                try:
+            try:
+                # сохраняем параметры закона в классе
+                self.law_param = array
+                # далее производится форматирование текста для бирки
+                key, param = array
+                symbols = LAW_SYMBOLS.get(key)
+                param_symbols = LAW_PARAM.get(key)
+                text = f'{symbols}\n'
+                for i in range(len(param_symbols)):
                     self.is_full_law_param = True if param[i] != '' else False
-                except:
+                    text += f'{param_symbols[i]}{param[i]} '
+                self.label_bezie_text = text
+                self.label_bezie.text = self.label_bezie_text
+            except:
                     pass
-                text += f'{param_symbols[i]}{param[i]} '
-            self.label_bezie_text = text
-            self.label_bezie.text = self.label_bezie_text
 
     def save_props(self) -> None:
         self.save_props_val = [self.bezierline.points,

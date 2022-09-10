@@ -1,3 +1,5 @@
+DEBUG: bool = True
+
 
 COLOR_DEFAULD: list = [1, 1, 1]
 COLOR_SELECTED: list = [1, 1, 0]
@@ -5,12 +7,14 @@ COLOR_CONDITION: list = [1, 1, 1]
 COLOR_TEXT_CONDITION: list = [0, 0, 0]
 COLOR_TEXT: list = [1, 1, 1]
 COLOR_CONNECTOR: list = [1, 0, 0]
-COLOR_BGR: list = [0, 0, 0, 1]
+COLOR_BGR: list = [0, 0, 0, 0]
 COLOR_BEZIE_LINE: list = [1, 1, 1]
+COLOR_COUNTER_CONDITION: list = [0, 0, 1]
 
 SIMPLE_CONNECT: bool = True
 
 WIDTH_LIGHTER: int = 3
+WIDTH_COUNTER: int = 1
 FONT_SIZE_LABEL_CONDITION: int = 60
 FONT_SIZE_LAW_PARAM: int = 18
 FONT_SIZE_LABEL_BEZIE: int = 18

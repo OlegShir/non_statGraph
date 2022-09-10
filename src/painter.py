@@ -42,11 +42,11 @@ class Painter(Widget):
         # отслеживание изменения размера окна
         Window.bind(on_resize=self.on_resize)
         Window.clearcolor = COLOR_BGR
-        self.message = MessageToUser(self.canvas, Window.size[1])
+        self.message = MessageToUser(self.canvas, Window.size[0], Window.size[1])
 
     def on_resize(self, window, width, height):
         '''Метод, который запускается при изменении размера окна'''
-        self.message.change_pos_label(height)
+        self.message.change_pos_label(width, height)
 
     def on_motion(self, window, touch):
         """Метод отслеживания перемещения мышки по рабочей области."""

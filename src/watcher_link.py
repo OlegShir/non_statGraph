@@ -19,13 +19,18 @@
 #            ]                                    #
 ###################################################
 
+from settings import DEBUG
+import copy
+
+
 def _logger(func):
     '''Логгер отслеживания состояния хранилища'''
     def wrapper(*args, **kwargs):
         rezult = func(*args, **kwargs)
-        zip = '-'
-        print(f'Storage: {args[0].storage}', '\n',
-              f'Len: {args[0].len_storage}', '\n', f'{zip*25}')
+        if DEBUG:
+            zip = '-'
+            print(f'Storage: {args[0].storage}', '\n',
+                  f'Len: {args[0].len_storage}', '\n', f'{zip*25}')
         return rezult
     return wrapper
 
@@ -80,13 +85,13 @@ class Watcher_link():
 
     def get_ful_conditions_index(self, links: list) -> set:
         '''Получение всех индексов состояний соединенных линиями Безье (links).'''
-        indexs_conditions:list = []
+        indexs_conditions: list = []
         for link in links:
             print(link)
             for i in range(len(self.storage)):
                 for j in range(len(self.storage[i])):
                     if self.storage[i][j] == link:
-                        indexs_conditions.extend([i,j])
+                        indexs_conditions.extend([i, j])
             print(indexs_conditions)
         indexs_conditions = set(indexs_conditions)
         print(indexs_conditions)
@@ -124,3 +129,19 @@ class Watcher_link():
             if val != False:
                 outer.append(val)
         return outer, inner
+
+    def export_storage(self) -> list:
+        '''Медод экстортирует значения законов распределения в новый список.
+
+           Так как объекты в storage являются сложными и написаны на Cython,
+           (not deepcopy) создается новое пустое хранилище и затем заполняется'''
+        new_storage: list = []
+        size = self.len_storage
+        for _ in range(size):
+            new_storage.append([False]*size)
+        for i in range(len(self.storage)):
+            for j in range(len(self.storage[i])):
+                if self.storage[i][j]:
+                    new_storage[i][j] = copy.deepcopy(
+                        self.storage[i][j].law_param)
+        return new_storage

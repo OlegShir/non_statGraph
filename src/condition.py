@@ -12,9 +12,10 @@ class Condition():
         self.count: int = count
         self.radius_condition: int = RADIUS_CONDITION
         self.radius_connector: int = RADIUS_CONNECTOR
-        #----condition & label
+        #----condition & label & contour
         self.condition_image: None or Ellipse = None
         self.label_image: None or Label = None
+        self.contour: None or Line = None
         # ----connector
         self.connector_image: list = []
         self.connectors_position: list = self.set_connector_position()
@@ -39,6 +40,21 @@ class Condition():
                                      pos=self.condition_position,
                                      color=COLOR_TEXT_CONDITION
                                      )
+        self.contour = self.add_cirle(COLOR_COUNTER_CONDITION, WIDTH_COUNTER)
+
+    def add_cirle(self, color:list, width: int) -> Line:
+        '''Метод создает окружность для контура и выделителя'''
+        with self.canvas:
+            Color(rgb=color)
+            line = Line(circle=(self.condition_position[0]+self.radius_condition,
+                                                self.condition_position[1] +
+                                                self.radius_condition,
+                                                self.radius_condition
+                                                ),
+                                        width=width
+                                        )
+        return line
+
 
     def move_condition(self, touch) -> None:
         '''Метод управления отрисовкой при перемещении состояний.'''
@@ -55,6 +71,7 @@ class Condition():
                     points[i] += ox
                     points[i + 1] += oy
             self.lighter_image.points = points
+            self.contour.points = points
             # новое положение коннекторов
             for i in range(4):
                 self.connectors_position[i][0] += ox
@@ -128,15 +145,7 @@ class Condition():
     def show_lighter(self) -> None:
         '''Отображение выделителя.'''
         if not self.lighter_image:
-            with self.canvas:
-                Color(rgb=COLOR_SELECTED)
-                self.lighter_image = Line(circle=(self.condition_position[0]+self.radius_condition,
-                                                  self.condition_position[1] +
-                                                  self.radius_condition,
-                                                  self.radius_condition
-                                                  ),
-                                          width=WIDTH_LIGHTER
-                                          )
+            self.lighter_image = self.add_cirle(COLOR_SELECTED, WIDTH_LIGHTER)
 
     def hide_lighter(self) -> None:
         '''Скрытие выделителя.'''
@@ -181,4 +190,5 @@ class Condition():
         self.hide_connectors()
         self.hide_lighter()
         self.canvas.remove(self.condition_image)
+        self.canvas.remove(self.contour)
         self.canvas.remove(self.label_image.canvas)

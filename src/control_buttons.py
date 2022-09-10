@@ -5,6 +5,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from src.condition import Condition
 from src.painter import Painter
+from src.solver import Solver
 from kivy.core.window import Window
 from settings import *
 import re
@@ -119,10 +120,13 @@ class ControlButtons(Widget):
         result = True
         for line in self.painter.bezier_line_array:
             result = result and line.is_full_law_param
-        if result:
-            self.painter.message.show_message('GO')
+        if not result:
+            self.painter.message.show_message('Введены не все параметры законов распределения')
             return
-        self.painter.message.show_message('FUCK')
+        export_storage = self.painter.watcher.export_storage()
+        solver = Solver(export_storage)
+        solution = solver.get_solution()
+        self.painter.message.show_message(solution)
 
     def export(self, instance) -> None:
         self.painter.export_to_png('test.png')
