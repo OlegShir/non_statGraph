@@ -29,20 +29,20 @@ RADIUS_CONDITION: int = 50
 RADIUS_CONNECTOR: int = 5
 RADIUS_BEZIER_POINT: int = 5
 
-LAW_SYMBOLS: dict = {'expon': 'Exp(\u03BB)',
+LAW_SYMBOLS: dict = {'exp': 'Exp(\u03BB)',
                      'gamma': '\u0393(\u03BA, \u03B8)',
                      'norm': 'N(\u03BC, \u03C3)',
-                     'uniform': 'U(a)',
-                     'rayleigh': 'Rayl(\u03C3)'}
+                     'unex': 'U(a)',
+                     'rayl': 'Rayl(\u03C3)'}
 
-LAW_FULL_NAME: dict = {'expon': 'Экспоненциальное\nраспределение',
+LAW_FULL_NAME: dict = {'exp': 'Экспоненциальное\nраспределение',
                        'gamma': 'Гамма\nраспределение',
                        'norm': 'Нормальное\nраспределение',
-                       'uniform': 'Равномерное\nраспределение',
-                       'rayleigh': 'Распределение\nРэлея'}
+                       'unex': 'Равномерное\nраспределение',
+                       'rayl': 'Распределение\nРэлея'}
 
-LAW_PARAM: dict = {'expon': ['\u03BB :'],
+LAW_PARAM: dict = {'exp': ['\u03BB :'],
                    'gamma': ['\u03BA :', '\u03BB :'],
                    'norm': ['\u03BC :', '\u03C3 :'],
-                   'uniform': ['a :'],
-                   'rayleigh': ['\u03C3 :']}
+                   'unex': ['a :'],
+                   'rayl': ['\u03C3 :']}

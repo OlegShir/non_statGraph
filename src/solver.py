@@ -1,6 +1,8 @@
-from sympy import symbols, integrate, oo, DiracDelta, laplace_transform, solve, pprint
-from sympy.stats import Normal, cdf, density
+from cmath import inf
+from sympy import symbols, DiracDelta, laplace_transform, solve, pprint
 from settings import DEBUG
+from scipy.stats import gamma, expon, norm, uniform, rayleigh
+from scipy.integrate import quad
 import math
 
 
@@ -19,12 +21,10 @@ class Solver():
     def __init__(self, storage: list) -> None:
         self.storage: list = storage
 
-
     def get_solution(self):
         system_equations = self.get_system_equations()
-        solution:str = self.solve_system_equations(system_equations)
+        solution: str = self.solve_system_equations(system_equations)
         return solution
-
 
     @_logger
     def get_system_equations(self) -> list:
@@ -90,27 +90,27 @@ class Solver():
         solution: dict = solve(equation, P)
         text = ''
         for key, value in solution.items():
-            text += f'{key}={value}\n' 
+            text += f'{key}={value}\n'
         return text
 
     def filt_laplace(self, law_param: list):
         '''Метод возвращает гипердельтную аппроксимацию выбранной плотности распределения.
            Значеия  могут быть:
-           - ['exp', [lambda]];
+           - ['expon', [lambda]];
            - ['gamma',[k, lambda]];
            - ['norm', [mu, sigma]];
-           - ['unex', [a]];
-           - ['rayl', [sigma]].
+           - ['uniform', [a]];
+           - ['rayleigh', [sigma]].
         '''
         distribution_type, param = law_param
         arg = list(map(int, param))
 
-        if distribution_type == 'exp':
+        if distribution_type == 'expon':
             # C1  = 0.854; C2 = 0.146; T1 = 0.293/lambda; T2 = 1.707/lambda
             C1 = 0.854
             C2 = 0.146
             T1 = 0.293/arg[0]
-            T2 = 1.707/arg[1]
+            T2 = 1.707/arg[0]
 
         if distribution_type == 'gamma':
             # C1  = (1 + sqrt(k + 1))/2*sqrt(k + 1); C2 = (1 - sqrt(k + 1))/2*sqrt(k + 1);
@@ -127,7 +127,7 @@ class Solver():
             T1 = arg[0] - arg[1]
             T2 = arg[0] + arg[1]
 
-        if distribution_type == 'unex':
+        if distribution_type == 'uniform':
             # C1  = 0.5; C2 = 0.5;
             # T1 = 0.211*a; T2 = 0.789*a
             C1 = 0.5
@@ -135,7 +135,7 @@ class Solver():
             T1 = 0.211*arg[0]
             T2 = 0.789*arg[0]
 
-        if distribution_type == 'rayl':
+        if distribution_type == 'rayleigh':
             # C1  = 0.35; C2 = 0.65; T1 = 0.773*sigma; T2 = 2.147*sigma
             C1 = 0.35
             C2 = 0.65
@@ -153,34 +153,52 @@ class Solver():
         return f_laplace_t
 
 
-def get_conditional_prob(first_law: list, second_law: list):
+def get_conditional_prob(array_law: list):
     '''Возвращает условные вероятности переходов.
     Условные вероятности переходов alfa и beta определяют выбор дальнейшего
     движения случайного процесса из состояний графа
     '''
-    x = symbols('x')
-    # получение функции плотности вероятности для первого закона распределения
-    if first_law[0] == 'Normal':
-        first_law_function = Normal(x, first_law[1], first_law[2])
+    # словарь методов
+    law_dict: dict = {'gamma': gamma, 'expon':expon, 'norm':norm, 'uniform':uniform, 'rayleigh':rayleigh}
+    # количество поданных законов
+    count_laws: int = len(array_law)
+    # список для расчитанных вероятностей перехода
+    probarty_array: list = []
+    # 
+    for _ in range(count_laws-1):
 
-    pdf_first_law = density(first_law_function)(x)
+        def formule_to_integrate(x):
+            result = 1
+            # построение формулы
+            for j in range(count_laws):
+                type_law, param_law = array_law[j]
+                # для первого в списке закона берется функция распределения
+                if j == 0:
+                    result = result * \
+                        law_dict.get(type_law, None).pdf(x, *param_law)
+                    continue
+                result = result * \
+                    (1-law_dict.get(type_law, None).cdf(x, *param_law))
+                # print(result)
+                return result
+        alfa, err = quad(formule_to_integrate, -inf, inf)
+        probarty_array.append(alfa)
+        #сдвиг списка [0,1,2] -> [1,2,0]
+        array_law = array_law[1:]+array_law[:1]        
 
-    # получение функции плотности вероятности для второго закона распределения
-    if second_law[0] == 'Normal':
-        second_law_function = Normal(x, second_law[1], second_law[2])
+    beta = 1 - sum(probarty_array)
+    probarty_array.append(beta)
 
-    cdf_second_law = cdf(second_law_function)(x)
-
-    # получение
-    formuleCondProb = (1 - pdf_first_law)*cdf_second_law
-    print(formuleCondProb)
-
-    # получение значений условных вероятностей переходов alfa и beta
-    alfa = integrate(formuleCondProb, (x, -oo, oo))
-    beta = 1 - alfa
-
-    return alfa, beta
+    return probarty_array
 
 
 if __name__ == '__main__':
-    pass
+    mass = [
+            [False, ['exp', ['1']], ['exp', ['2']]],
+            [False, False, ['exp', ['3']]],
+            [False, False, ['exp', ['4']]]
+           ]                       
+
+    for i in mass:
+        if isinstance(i,list):
+            print(i)
