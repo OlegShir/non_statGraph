@@ -6,11 +6,10 @@
 
 
 
-
 DEBUG: bool = True
 
 
-COLOR_DEFAULD: list = [1, 1, 1]
+COLOR_DEFAULD: list = [1, 1, 1]  
 COLOR_SELECTED: list = [1, 1, 0]
 COLOR_CONDITION: list = [1, 1, 1]
 COLOR_TEXT_CONDITION: list = [0, 0, 0]
