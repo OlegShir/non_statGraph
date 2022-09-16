@@ -6,7 +6,7 @@
 
 ---
 
-### Theory 🎓
+### Theory :mortar_board:
 
 <p align="justify"> The app calculates the probability of being in a certain state of a queuing system with arbitrary distributions of time points between incoming requests and their service time points. The app is based on the use of the Laplace transform and the principle of probabilistic balance when compiling equations for images of the probabilities of the system states. The application allows you to explore the transient process in systems that are called non-stationary. </p>
 
@@ -63,4 +63,8 @@ General:
 * Kivy  
 * Sympy  
 * Scipy
-* Matplotlib
+* Matplotlib  
+
+---
+
+TAGS :lab1el:: laplace, state of system, distribution laws, graphs, Dirac, delta function
