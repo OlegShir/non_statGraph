@@ -1,3 +1,4 @@
+LANG = 'EN'
 DEBUG: bool = True
 
 
@@ -35,11 +36,18 @@ LAW_SYMBOLS: dict = {'expon': 'Exp(\u03BB)',
                      'uniform': 'U(a)',
                      'rayleigh': 'Rayl(\u03C3)'}
 
-LAW_FULL_NAME: dict = {'expon': 'Экспоненциальное\nраспределение',
-                       'gamma': 'Гамма\nраспределение',
-                       'norm': 'Нормальное\nраспределение',
-                       'uniform': 'Равномерное\nраспределение',
-                       'rayleigh': 'Распределение\nРэлея'}
+if LANG == 'RU':
+    LAW_FULL_NAME: dict = {'expon': 'Экспоненциальное\nраспределение',
+                        'gamma': 'Гамма\nраспределение',
+                        'norm': 'Нормальное\nраспределение',
+                        'uniform': 'Равномерное\nраспределение',
+                        'rayleigh': 'Распределение\nРэлея'}
+else:
+    LAW_FULL_NAME: dict = {'expon': 'Exponential\ndistribution',
+                        'gamma': 'Gamma\ndistribution',
+                        'norm': 'Normal\ndistribution',
+                        'uniform': 'Uniform\ndistribution',
+                        'rayleigh': 'Rayleigh\ndistribution'}
 
 LAW_PARAM: dict = {'expon': ['\u03BB :'],
                    'gamma': ['\u03BA :', '\u03BB :'],

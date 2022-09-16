@@ -18,7 +18,7 @@
 
 ### Settings :gear:
 
-App settings are set in a file *setting.py*. 
+App settings are set in a file <span style="color:blue">setting.py</span>.
 
 * **DEBUG**: bool - mode of operation, if *True*, outputs intermediate results of calculations to the console (default *True*);  
 
