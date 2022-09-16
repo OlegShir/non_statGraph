@@ -2,9 +2,20 @@
 
 <img src="img/readme/h2.png" width="100%">
 
-## Description
+## Description  
 
 ---
+
+### Theory
+
+<p align="justify"> The app calculates the probability of being in a certain state of a queuing system with arbitrary distributions of time points between incoming requests and their service time points. The app is based on the use of the Laplace transform and the principle of probabilistic balance when compiling equations for images of the probabilities of the system states. The application allows you to explore the transient process in systems that are called non-stationary. </p>
+
+---
+
+### Features
+
+---
+
 ### Settings  
 
 App settings are set in a file *setting.py*. 
@@ -30,35 +41,26 @@ The app uses pixels as the unit of measurement.
   
 * **WIDTH_LIGHTER**: int - width of highlighter line of process state (default *3*);  
 * **WIDTH_COUNTER**: int - width of outer contour of process state (default *1*);  
+* **SIZE_ARROW**: int - size of arrow of lines connecting process states (default *10*);  
+* **SIZE_BTN**: tuple - size of all button app, length*height, (default *(150, 60)*);
+* **RADIUS_CONDITION**: int - radius of process state (default *50*);  
+* **RADIUS_CONNECTOR**: int - radius of process state connectors  (default *5*);  
+* **RADIUS_BEZIER_POINT**: int - radius of point of lines connecting process states (default *5*);   
 
-SIZE_ARROW: int = 10
-SIZE_BTN: tuple = (150, 60)
-PADDING_VERTICAL: int = 30
-PADDING_HORIZONTAL: int = 10
+#### Fontsize  
 
-RADIUS_CONDITION: int = 50
-RADIUS_CONNECTOR: int = 5
-RADIUS_BEZIER_POINT: int = 5
+* **FONT_SIZE_LABEL_CONDITION**: int - fontsize of number process state (default *60*);  
+* **FONT_SIZE_LAW_PARAM**: int - fontsize of text distribution law (default *18*);  
+* **FONT_SIZE_MESSAGE_TO_USER**: int - fontsize of text message to user (default *14*);  
 
-FONT_SIZE_LABEL_CONDITION: int = 60
-FONT_SIZE_LAW_PARAM: int = 18
-FONT_SIZE_LABEL_BEZIE: int = 18
-FONT_SIZE_MESSAGE_TO_USER: int = 14
+--- 
 
-LAW_SYMBOLS: dict = {'expon': 'Exp(\u03BB)',
-                     'gamma': '\u0393(\u03BA, \u03B8)',
-                     'norm': 'N(\u03BC, \u03C3)',
-                     'uniform': 'U(a)',
-                     'rayleigh': 'Rayl(\u03C3)'}
+### Requirements
 
-LAW_FULL_NAME: dict = {'expon': 'Экспоненциальное\nраспределение',
-                       'gamma': 'Гамма\nраспределение',
-                       'norm': 'Нормальное\nраспределение',
-                       'uniform': 'Равномерное\nраспределение',
-                       'rayleigh': 'Распределение\nРэлея'}
+Installing packages: **pip install -r requirements.txt**  
 
-LAW_PARAM: dict = {'expon': ['\u03BB :'],
-                   'gamma': ['\u03BA :', '\u03BB :'],
-                   'norm': ['\u03BC :', '\u03C3 :'],
-                   'uniform': ['a :'],
-                   'rayleigh': ['\u03C3 :']}
+General:  
+* Kivy  
+* Sympy  
+* Scipy
+* Matplotlib
