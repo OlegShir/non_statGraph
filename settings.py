@@ -11,7 +11,7 @@ COLOR_BGR: list = [0, 0, 0, 0]
 COLOR_BEZIE_LINE: list = [1, 1, 1]
 COLOR_COUNTER_CONDITION: list = [0, 0, 1]
 
-SIMPLE_CONNECT: bool = True
+#SIMPLE_CONNECT: bool = True
 
 WIDTH_LIGHTER: int = 3
 WIDTH_COUNTER: int = 1

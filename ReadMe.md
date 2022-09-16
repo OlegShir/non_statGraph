@@ -4,28 +4,32 @@
 
 ## Description
 
-###Settings  
+---
+### Settings  
 
-App settings are set in a file *setting.py*. The app uses the RGB color palette. 
+App settings are set in a file *setting.py*. 
 
 * **DEBUG**: bool - mode of operation, if *True*, outputs intermediate results of calculations to the console (default *True*);  
+
+#### Color  
+  
+The app uses the RGB color palette.  
+  
 * **COLOR_SELECTED**: list - color of selected objects (default *yellow [1, 1, 0]*);  
 * **COLOR_CONDITION**: list - color of process state (default *white [1, 1, 1]*);   
 * **COLOR_TEXT_CONDITION**: color of number of process state (default *black [0, 0, 0]*);  
-COLOR_TEXT: list = [1, 1, 1]
-COLOR_CONNECTOR: list = [1, 0, 0]
-COLOR_BGR: list = [0, 0, 0, 0]
-COLOR_BEZIE_LINE: list = [1, 1, 1]
-COLOR_COUNTER_CONDITION: list = [0, 0, 1]
-
-SIMPLE_CONNECT: bool = True
-
-WIDTH_LIGHTER: int = 3
-WIDTH_COUNTER: int = 1
-FONT_SIZE_LABEL_CONDITION: int = 60
-FONT_SIZE_LAW_PARAM: int = 18
-FONT_SIZE_LABEL_BEZIE: int = 18
-FONT_SIZE_MESSAGE_TO_USER: int = 14
+* **COLOR_COUNTER_CONDITION**: list - color of outer contour of process state (default *blue [0, 0, 1]*);  
+* **COLOR_CONNECTOR**: list - color of process state connectors (default *red [1, 1, 1]*);  
+* **COLOR_BGR**: list - app background color, color palette **RGBA** (default *black [0, 0, 0, 0]*);  
+* **COLOR_BEZIE_LINE**: list - color of lines connecting process states (default *white [1, 1, 1]*);   
+* **COLOR_TEXT**: list - color of text other elements (default *white [1, 1, 1]*);  
+  
+#### Size  
+  
+The app uses pixels as the unit of measurement.   
+  
+* **WIDTH_LIGHTER**: int - width of highlighter line of process state (default *3*);  
+* **WIDTH_COUNTER**: int - width of outer contour of process state (default *1*);  
 
 SIZE_ARROW: int = 10
 SIZE_BTN: tuple = (150, 60)
@@ -35,6 +39,11 @@ PADDING_HORIZONTAL: int = 10
 RADIUS_CONDITION: int = 50
 RADIUS_CONNECTOR: int = 5
 RADIUS_BEZIER_POINT: int = 5
+
+FONT_SIZE_LABEL_CONDITION: int = 60
+FONT_SIZE_LAW_PARAM: int = 18
+FONT_SIZE_LABEL_BEZIE: int = 18
+FONT_SIZE_MESSAGE_TO_USER: int = 14
 
 LAW_SYMBOLS: dict = {'expon': 'Exp(\u03BB)',
                      'gamma': '\u0393(\u03BA, \u03B8)',
