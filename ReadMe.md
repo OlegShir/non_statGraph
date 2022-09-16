@@ -13,6 +13,8 @@
 ---
 
 ### Features :fire:
+1. Plotting a 
+<img src="img/readme/plot.png" width="60%">
 
 ---
 
@@ -67,4 +69,4 @@ General:
 
 ---
 
-TAGS :lab1el:: laplace, state of system, distribution laws, graphs, Dirac, delta function
+TAGS :label:: laplace, state of system, distribution laws, graphs, Dirac, delta function
