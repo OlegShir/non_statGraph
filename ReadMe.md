@@ -4,15 +4,14 @@
 
 ## Description
 
+###Settings  
 
+App settings are set in a file *setting.py*. The app uses the RGB color palette. 
 
-DEBUG: bool = True
-
-
-COLOR_DEFAULD: list = [1, 1, 1]  
-COLOR_SELECTED: list = [1, 1, 0]
-COLOR_CONDITION: list = [1, 1, 1]
-COLOR_TEXT_CONDITION: list = [0, 0, 0]
+* **DEBUG**: bool - mode of operation, if *True*, outputs intermediate results of calculations to the console (default *True*);  
+* **COLOR_SELECTED**: list - color of selected objects (default *yellow [1, 1, 0]*);  
+* **COLOR_CONDITION**: list - color of process state (default *white [1, 1, 1]*);   
+* **COLOR_TEXT_CONDITION**: color of number of process state (default *black [0, 0, 0]*);  
 COLOR_TEXT: list = [1, 1, 1]
 COLOR_CONNECTOR: list = [1, 0, 0]
 COLOR_BGR: list = [0, 0, 0, 0]
