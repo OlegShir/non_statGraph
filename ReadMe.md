@@ -6,23 +6,23 @@
 
 ---
 
-### Theory
+### Theory 🎓
 
 <p align="justify"> The app calculates the probability of being in a certain state of a queuing system with arbitrary distributions of time points between incoming requests and their service time points. The app is based on the use of the Laplace transform and the principle of probabilistic balance when compiling equations for images of the probabilities of the system states. The application allows you to explore the transient process in systems that are called non-stationary. </p>
 
 ---
 
-### Features
+### Features :fire:
 
 ---
 
-### Settings  
+### Settings :gear:
 
 App settings are set in a file *setting.py*. 
 
 * **DEBUG**: bool - mode of operation, if *True*, outputs intermediate results of calculations to the console (default *True*);  
 
-#### Color  
+#### Color :art: 
   
 The app uses the RGB color palette.  
   
@@ -35,7 +35,7 @@ The app uses the RGB color palette.
 * **COLOR_BEZIE_LINE**: list - color of lines connecting process states (default *white [1, 1, 1]*);   
 * **COLOR_TEXT**: list - color of text other elements (default *white [1, 1, 1]*);  
   
-#### Size  
+#### Size :triangular_ruler:
   
 The app uses pixels as the unit of measurement.   
   
@@ -47,7 +47,7 @@ The app uses pixels as the unit of measurement.
 * **RADIUS_CONNECTOR**: int - radius of process state connectors  (default *5*);  
 * **RADIUS_BEZIER_POINT**: int - radius of point of lines connecting process states (default *5*);   
 
-#### Fontsize  
+#### Fonts :pencil:
 
 * **FONT_SIZE_LABEL_CONDITION**: int - fontsize of number process state (default *60*);  
 * **FONT_SIZE_LAW_PARAM**: int - fontsize of text distribution law (default *18*);  
