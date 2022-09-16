@@ -125,8 +125,8 @@ class ControlButtons(Widget):
             return
         export_storage = self.painter.watcher.export_storage()
         solver = Solver(export_storage)
-        solution = solver.get_solution()
-        self.painter.message.show_message(solution)
+        solver.get_solution()
+        #self.painter.message.show_message(solution)
 
     def export(self, instance) -> None:
         self.painter.export_to_png('test.png')

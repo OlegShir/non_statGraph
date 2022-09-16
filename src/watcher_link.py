@@ -87,15 +87,12 @@ class Watcher_link():
         '''Получение всех индексов состояний соединенных линиями Безье (links).'''
         indexs_conditions: list = []
         for link in links:
-            print(link)
             for i in range(len(self.storage)):
                 for j in range(len(self.storage[i])):
                     if self.storage[i][j] == link:
                         indexs_conditions.extend([i, j])
-            print(indexs_conditions)
         indexs_conditions = set(indexs_conditions)
-        print(indexs_conditions)
-
+       
         return indexs_conditions
 
     @_logger
