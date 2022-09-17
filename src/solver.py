@@ -18,7 +18,9 @@ def _logger(func):
         return result
     return wrapper
 
+
 t = symbols('t')
+
 
 class Solver():
     def __init__(self, storage: list) -> None:
@@ -54,19 +56,18 @@ class Solver():
     def get_solution(self):
         system_equations = self.get_system_equations()
         solution: dict = self.solve_system_equations(system_equations)
-        text:str = ''
+        text: str = ''
         for key, value in solution.items():
             text += f'{key}={value}\n'
 
-        #return solution, text
         self.plot_solution(solution)
 
     def plot_solution(self, solution: dict):
-            
-        plotting = plot(show=False, legend=True, xlabel = 't', ylabel = 'P(t)')
+
+        plotting = plot(show=False, legend=True, xlabel='t', ylabel='P(t)')
         for key, value in solution.items():
             label_str = f'{str(key)}(t)'
-            plotting.extend(plot(value, (t, 0, 100), legend=True,
+            plotting.extend(plot(value, (t, 0.1, 100), legend=True,
                             show=False, label=label_str, ylim=(0, 1)))
 
         plotting.show()
@@ -153,7 +154,7 @@ class Solver():
            - ['rayleigh', [sigma]].
         '''
         distribution_type, param = law_param
-        arg:float = list(map(float, param))
+        arg: float = list(map(float, param))
 
         if distribution_type == 'expon':
             # C1  = 0.854; C2 = 0.146; T1 = 0.293/lambda; T2 = 1.707/lambda
@@ -245,19 +246,4 @@ class Solver():
 
 
 if __name__ == '__main__':
-
-    mass = [
-        [False, ['norm', ['20', '5']], False],
-        [['norm', ['15', '3']], False, ['norm', ['20', '5']]],
-        [False, ['norm', ['15', '3']], False]
-    ]
-
-    i = Solver(mass)
-    solution, text = i.get_solution()
-    i.plot_solution(solution)
-    '''
-    lab = ['1','2']
-    t = symbols('t')
-    p1 = plot(t, t**2,(t, 0, 1), ylim = (0,1), ylabel = 'P(t)', legend = True, label = lab)
-    '''
-    #i.filt_laplace(['norm', ['20','5']])
+    pass

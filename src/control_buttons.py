@@ -28,7 +28,7 @@ class ControlButtons(Widget):
         # создание свойств кнопки выбора закона
         self.disabled_law_btn: bool = True
         self.key_law_btn: str = ''
-        self.text_law_btn: str = 'Выберите закон\nраспределения'
+        self.text_law_btn: str = BTN_TEXT.get('dropdown_btn')
         self.label_image_law_btn: list = []
         self.input_image_law_btn: list = []
         # отрисовка всех кнопок
@@ -39,26 +39,26 @@ class ControlButtons(Widget):
 
     def build(self) -> None:
         '''Метод отрисовки всех кнопок'''
-        self.add_condition_btn = Button(text='Добавить\nсостояние',
+        self.add_condition_btn = Button(text=BTN_TEXT.get('add_btn'),
                                         halign='center',
                                         on_press=self.add_condition,
                                         size=SIZE_BTN
                                         )
-        self.del_element_btn = Button(text='Удалить\nэлемент',
+        self.del_element_btn = Button(text=BTN_TEXT.get('del_btn'),
                                       halign='center',
                                       on_press=self.del_element,
                                       pos=(155, 0),
                                       size=SIZE_BTN,
                                       disabled=True
                                       )
-        self.calculate_btn = Button(text='Провести\nрасчет',
+        self.calculate_btn = Button(text=BTN_TEXT.get('calculate_btn'),
                                     halign='center',
                                     on_press=self.calculate,
                                     pos=(650, 0),
                                     size=SIZE_BTN
                                     )
 
-        self.export_png_btn = Button(text='Экспортировать\nграф',
+        self.export_png_btn = Button(text=BTN_TEXT.get('export_btn'),
                                      halign='center',
                                      on_press=self.export,
                                      pos=(650, 70),
@@ -129,7 +129,7 @@ class ControlButtons(Widget):
         #self.painter.message.show_message(solution)
 
     def export(self, instance) -> None:
-        self.painter.export_to_png('test.png')
+        self.painter.export_to_png('graph.png')
 
     def on_select_dropdown(self, instance, x) -> None:
         '''Метод изменения названия кнопки при выборе'''

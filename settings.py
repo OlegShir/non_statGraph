@@ -29,19 +29,30 @@ LAW_SYMBOLS: dict = {'expon': 'Exp(\u03BB)',
                      'uniform': 'U(a)',
                      'rayleigh': 'Rayl(\u03C3)'}
 
-if LANG == 'RU':
-    LAW_FULL_NAME: dict = {'expon': 'Экспоненциальное\nраспределение',
-                        'gamma': 'Гамма\nраспределение',
-                        'norm': 'Нормальное\nраспределение',
-                        'uniform': 'Равномерное\nраспределение',
-                        'rayleigh': 'Распределение\nРэлея'}
-    BTN_TEXT = {}
-else:
+if LANG == 'EN':
     LAW_FULL_NAME: dict = {'expon': 'Exponential\ndistribution',
-                        'gamma': 'Gamma\ndistribution',
-                        'norm': 'Normal\ndistribution',
-                        'uniform': 'Uniform\ndistribution',
-                        'rayleigh': 'Rayleigh\ndistribution'}
+                           'gamma': 'Gamma\ndistribution',
+                           'norm': 'Normal\ndistribution',
+                           'uniform': 'Uniform\ndistribution',
+                           'rayleigh': 'Rayleigh\ndistribution'}
+
+    BTN_TEXT = {'add_btn': 'Add\nstate',
+                'del_btn': 'Remove\nelement',
+                'calculate_btn': 'Calculate',
+                'export_btn': 'Save\ngraph',
+                'dropdown_btn': 'Select\ndistribution'}
+else:
+    LAW_FULL_NAME: dict = {'expon': 'Экспоненциальное\nраспределение',
+                           'gamma': 'Гамма\nраспределение',
+                           'norm': 'Нормальное\nраспределение',
+                           'uniform': 'Равномерное\nраспределение',
+                           'rayleigh': 'Распределение\nРэлея'}
+
+    BTN_TEXT = {'add_btn': 'Добавить\nсостояние',
+                'del_btn': 'Удалить\nэлемент',
+                'calculate_btn': 'Провести\nрасчет',
+                'export_btn': 'Сохранить\nграф',
+                'dropdown_btn': 'Выберите закон\nраспределения'}
 
 LAW_PARAM: dict = {'expon': ['\u03BB :'],
                    'gamma': ['\u03BA :', '\u03BB :'],

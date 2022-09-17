@@ -13,8 +13,27 @@
 ---
 
 ### Features :fire:
-1. Plotting a 
-<img src="img/readme/plot.png" width="60%">
+#### Draw
+Draw system state graph
+<p align="center">
+<img src="img/readme/video_1.gif" align="center" width="50%">
+</p>
+
+#### Сhoose 
+Сhoose the laws of distribution of transitions between system states: <span style="color:blue">Exponential</span>, <span style="color:blue">Gamma</span>, <span style="color:blue">Normal</span>, <span style="color:blue">Uniform</span> and <span style="color:blue">Rayleigh</span>.
+
+<p align="center">
+<img src="img/readme/video_2.gif" align="center" width="40%">
+</p>
+
+#### Solution
+Get the results of solving state probabilities process in the form of curves from time.
+<p align="center">
+<img src="img/readme/video_3.gif" align="center" width="50%">
+</p>
+
+#### Restriction
+If you use different distribution laws for one system, then make sure you have a **powerful** computer)
 
 ---
 
@@ -24,7 +43,7 @@ App settings are set in a file <span style="color:blue">setting.py</span>.
 
 * **DEBUG**: bool - mode of operation, if *True*, outputs intermediate results of calculations to the console (default *True*);  
 
-#### Color :art: 
+#### Color
   
 The app uses the RGB color palette.  
   
@@ -37,7 +56,7 @@ The app uses the RGB color palette.
 * **COLOR_BEZIE_LINE**: list - color of lines connecting process states (default *white [1, 1, 1]*);   
 * **COLOR_TEXT**: list - color of text other elements (default *white [1, 1, 1]*);  
   
-#### Size :triangular_ruler:
+#### Size
   
 The app uses pixels as the unit of measurement.   
   
@@ -49,7 +68,7 @@ The app uses pixels as the unit of measurement.
 * **RADIUS_CONNECTOR**: int - radius of process state connectors  (default *5*);  
 * **RADIUS_BEZIER_POINT**: int - radius of point of lines connecting process states (default *5*);   
 
-#### Fonts :pencil:
+#### Fonts
 
 * **FONT_SIZE_LABEL_CONDITION**: int - fontsize of number process state (default *60*);  
 * **FONT_SIZE_LAW_PARAM**: int - fontsize of text distribution law (default *18*);  
@@ -57,7 +76,7 @@ The app uses pixels as the unit of measurement.
 
 --- 
 
-### Requirements
+### Requirements :link:
 
 Installing packages: **pip install -r requirements.txt**  
 
